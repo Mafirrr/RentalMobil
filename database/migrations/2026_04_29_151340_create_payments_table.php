@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $Schema) {
+        Schema::create('payments', function (Blueprint $Schema) {
             $Schema->id();
-            $Schema->string('name');
+            $Schema->foreignId('rental_id')->constrained()->onDelete('cascade');
+            $Schema->dateTime('payment_date');
+            $Schema->decimal('amount', 15, 2);
+            $Schema->string('payment_method');
+            $Schema->string('payment_status')->default('success');
             $Schema->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categoris');
+        Schema::dropIfExists('payments');
     }
 };
