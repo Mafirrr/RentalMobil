@@ -39,10 +39,6 @@
                                 Sekarang</button>
                         </form>
 
-                        <div class="text-center mt-4">
-                            <p class="small text-secondary">Belum punya akun? <a href="/register"
-                                    class="text-primary text-decoration-none fw-bold">Daftar Gratis</a></p>
-                        </div>
                     </div>
                 </div>
             </div>

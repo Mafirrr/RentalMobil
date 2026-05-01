@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
                 'username' => $data['username'],
                 'email' => $data['email'],
                 'password' => Hash::make('password123'),
-                'role' => 'customer',
+                'role' => 'karyawan',
             ]);
 
             UserDetail::create([
