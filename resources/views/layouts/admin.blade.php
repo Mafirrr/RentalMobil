@@ -65,28 +65,21 @@
         <a class="navbar-brand fw-bold mb-5 fs-4" href="#">RENTAL<span class="text-primary">MOBIL</span></a>
 
         <ul class="nav nav-pills flex-column mb-auto">
-            <a href="{{ route('admin.dashboard') }}"
-                class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
-            </a>
+            <li><a href="{{ route('admin.dashboard') }}"
+                    class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}"><i
+                        class="bi bi-speedometer2 me-3"></i>Dashboard
+                </a></li>
 
             <a href="{{ route('admin.cars') }}" class="nav-link {{ Route::is('admin.cars*') ? 'active' : '' }}">
-                <i class="bi bi-car-front"></i> Armada
+                <i class="bi bi-car-front me-3"></i>Armada
             </a>
-            <li><a href="#" class="nav-link"><i class="bi bi-person-check me-3"></i> Persetujuan Sewa</a></li>
-            <li>
-                <a href="#userSubmenu" data-bs-toggle="collapse"
-                    class="nav-link d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-people me-3"></i> Daftar Pengguna</span>
-                    <i class="bi bi-chevron-down small"></i>
-                </a>
-                <div class="collapse ms-4" id="userSubmenu">
-                    <ul class="nav flex-column">
-                        <li><a href="#" class="nav-link small py-2">Penyewa</a></li>
-                        <li><a href="#" class="nav-link small py-2">Admin</a></li>
-                    </ul>
-                </div>
-            </li>
+            <li><a href="{{ route('admin.rentals') }}"
+                    class="nav-link {{ Route::is('admin.rentals*') ? 'active' : '' }}"><i
+                        class="bi bi-person-check me-3"></i>Penyewaan</a></li>
+            <li><a href="{{ route('admin.report') }}"
+                    class="nav-link {{ Route::is('admin.report') ? 'active' : '' }}"><i
+                        class="bi bi-person-check me-3"></i>Laporan
+                </a></li>
         </ul>
 
         <hr class="text-secondary opacity-25">
@@ -104,8 +97,10 @@
                     Dashboard
                 @elseif(Route::is('admin.cars*'))
                     Manajemen Armada
-                    {{-- @elseif(Route::is('admin.categories*'))
-                    Kategori Mobil --}}
+                @elseif(Route::is('admin.rentals*'))
+                    Input Penyewaan
+                @elseif(Route::is('admin.report*'))
+                    Laporan Penyewaan
                 @else
                     Panel Admin
                 @endif

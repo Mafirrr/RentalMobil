@@ -24,9 +24,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return Auth::user()->role === 'admin'
-                ? redirect()->intended('/admin/dashboard')
-                : redirect()->intended('/');
+            return redirect()->intended('/admin/dashboard');
         }
 
         return back()->withErrors(['email' => 'Email atau password salah.']);
@@ -46,10 +44,10 @@ class AuthController extends Controller
         ]);
 
         User::create([
-            'username' => $request->username, // Menggunakan username
+            'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'customer',
+            'role' => 'karyawan',
         ]);
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');

@@ -28,6 +28,8 @@
                             class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'available' ? 'bg-primary' : '' }}">Tersedia</a>
                         <a href="{{ route('admin.cars', ['status' => 'rented']) }}"
                             class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'rented' ? 'bg-primary' : '' }}">Disewa</a>
+                        <a href="{{ route('admin.cars', ['status' => 'maintenance']) }}"
+                            class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'maintenance' ? 'bg-primary' : '' }}">Perbaikan</a>
                     </div>
                 </div>
             </div>
@@ -78,10 +80,21 @@
                                         style="width: 12px; height: 12px; background-color: {{ $car->status == 'available' ? '#2ecc71' : '#e74c3c' }};">
                                     </div>
                                     <span
-                                        class="small text-secondary">{{ $car->status == 'available' ? 'Tersedia' : 'Disewa' }}</span>
+                                        class="small text-secondary">{{ ($car->status == 'available' ? 'Tersedia' : $car->status == 'rented') ? 'Disewa' : 'Perbaikan' }}</span>
                                 </div>
 
                                 <div class="d-flex gap-2">
+                                    <form action="{{ route('admin.cars.maintenance', $car->id) }}" method="POST"
+                                        class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit"
+                                            class="btn btn-sm rounded-3 px-2 {{ $car->status == 'maintenance' ? 'btn-warning' : 'btn-outline-warning' }}"
+                                            title="{{ $car->status == 'maintenance' ? 'Set Available' : 'Set Maintenance' }}"
+                                            {{ $car->status == 'rented' ? 'disabled' : '' }}>
+                                            <i class="bi {{ $car->status == 'maintenance' ? 'bi-tools' : 'bi-gear' }}"></i>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('admin.cars.edit', $car->id) }}"
                                         class="btn btn-primary btn-sm rounded-3 px-2">
                                         <i class="bi bi-pencil"></i>

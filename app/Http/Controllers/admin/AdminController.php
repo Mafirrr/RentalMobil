@@ -102,6 +102,21 @@ class AdminController extends Controller
 
         return redirect()->route('admin.cars')->with('success', 'Data armada ' . $car->model . ' berhasil diperbarui!');
     }
+
+    public function toggleMaintenance(Car $car)
+    {
+
+        $newStatus = ($car->status === 'available') ? 'maintenance' : 'available';
+
+        if ($car->status === 'rented') {
+            return redirect()->back()->with('error', 'Mobil sedang disewa, tidak bisa masuk mode maintenance.');
+        }
+
+        $car->update(['status' => $newStatus]);
+
+        return redirect()->back()->with('success', 'Status armada berhasil diperbarui.');
+    }
+
     public function destroy($id)
     {
         $car = Car::findOrFail($id);
