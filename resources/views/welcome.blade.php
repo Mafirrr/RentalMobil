@@ -1006,8 +1006,8 @@
             </div>
 
             <div class="text-center mt-5 fade-up">
-                <a href="#" class="btn-ghost-capstone" style="display: inline-flex;">
-                    LIHAT SEMUA MOBIL <i class="bi bi-arrow-right ms-2"></i>
+                <a href="{{ route('category') }}" class="btn-ghost-capstone" style="display: inline-flex;">
+                    LIHAT SEMUA KENDARAAN <i class="bi bi-arrow-right ms-2"></i>
                 </a>
             </div>
         </div>

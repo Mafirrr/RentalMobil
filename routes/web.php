@@ -32,6 +32,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/rental/{rental}/cancel', [PenyewaController::class, 'cancel'])->name('admin.rentals.cancel');
     Route::get('/rental/report', [PenyewaController::class, 'report'])->name('admin.report');
 });
+Route::get('/kendaraan', function () {
+    return view('category');
+})->name('category');
+
+Route::get('/detail', function () {
+    return view('detail');
+})->name('detail');
+Route::get('/pembayaran', function () {
+    return view('pembayaran');
+})->name('pembayaran');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
