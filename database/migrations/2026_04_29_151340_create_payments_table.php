@@ -11,14 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $Schema) {
-            $Schema->id();
-            $Schema->foreignId('rental_id')->constrained()->onDelete('cascade');
-            $Schema->dateTime('payment_date');
-            $Schema->decimal('amount', 15, 2);
-            $Schema->string('payment_method');
-            $Schema->string('payment_status')->default('success');
-            $Schema->timestamps();
+        Schema::create('payments', function (Blueprint $table) {
+            $table->id();
+            $table->string('reference')->unique()->index();
+            $table->string('merchant_ref')->unique()->index();
+            $table->foreignId('rental_id')->constrained('rentals')->onDelete('cascade');
+            $table->decimal('total_bill', 12, 2);
+            $table->decimal('amount', 12, 2);
+            $table->enum('payment_type', ['dp', 'full', 'repayment'])->default('full');
+            $table->decimal('fee_amount', 12, 2)->default(0);
+            $table->decimal('net_amount', 12, 2)->default(0);
+            $table->string('payment_method');
+            $table->string('payment_name');
+            $table->enum('status', ['unpaid', 'paid', 'expired', 'failed', 'refund'])->default('unpaid');
+            $table->string('checkout_url')->nullable();
+            $table->dateTime('paid_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

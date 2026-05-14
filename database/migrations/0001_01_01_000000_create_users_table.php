@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('username');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'karyawan'])->default('karyawan');
+            $table->enum('role', ['admin', 'penyewa'])->default('penyewa');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -27,7 +27,7 @@ return new class extends Migration
             $Schema->string('full_name');
             $Schema->string('phone');
             $Schema->text('address');
-            $Schema->string('identity_number');
+            $Schema->string('identity_number')->nullable();
             $Schema->timestamps();
         });
 
