@@ -2,21 +2,32 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
-    protected $fillable = [
-        'rental_id',
-        'payment_date',
-        'amount',
-        'payment_method',
-        'payment_status'
-    ];
+    use HasFactory, SoftDeletes;
 
-    protected $casts = [
-        'payment_date' => 'datetime',
+    /**
+     * Atribut yang dapat diisi melalui mass assignment.
+     */
+    protected $fillable = [
+        'reference',
+        'merchant_ref',
+        'rental_id',
+        'total_bill',
+        'amount',
+        'fee_amount',
+        'net_amount',
+        'payment_method',
+        'payment_type',
+        'payment_name',
+        'status',
+        'checkout_url',
+        'paid_at'
     ];
 
     public function rental(): BelongsTo

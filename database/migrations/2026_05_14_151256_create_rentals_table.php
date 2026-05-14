@@ -13,17 +13,15 @@ return new class extends Migration
     {
         Schema::create('rentals', function (Blueprint $Schema) {
             $Schema->id();
-            $Schema->string('customer_name');
-            $Schema->string('customer_phone');
-            $Schema->text('customer_address')->nullable();
-            $Schema->foreignId('car_id')->constrained('cars');
+            $Schema->foreignId('user_id')->constrained('users');
+            $Schema->string('NIK')->nullable();
+            $Schema->foreignId('vehicle_id')->constrained('vehicles');
             $Schema->dateTime('rental_date');
             $Schema->dateTime('return_date_scheduled');
-            $Schema->dateTime('return_date_actual')->nullable();
-            $Schema->decimal('total_price', 15, 2)->default(0);
-            $Schema->decimal('amount_paid', 15, 2)->default(0);
+            $Schema->integer('duration')->default(1);
+            $Schema->decimal('total_price', 12, 2)->default(0);
+            $Schema->decimal('amount_paid', 12, 2)->default(0);
             $Schema->enum('status', ['pending', 'ongoing', 'completed', 'cancelled'])->default('ongoing');
-            $Schema->text('admin_notes')->nullable();
             $Schema->timestamps();
             $Schema->softDeletes();
         });
