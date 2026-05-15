@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Category;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 
@@ -13,14 +13,14 @@ class LandingController extends Controller
     {
         $categories = Category::all();
 
-        $query = Car::with('category');
+        $query = Vehicle::with('category', 'car', 'motorcycle');
 
         if ($request->has('category') && $request->category != '') {
             $query->where('category_id', $request->category);
         }
 
-        $cars = $query->latest()->get();
+        $vehicles = $query->latest()->take(6)->get();
 
-        return view('welcome', compact('cars', 'categories'));
+        return view('welcome', compact('vehicles', 'categories'));
     }
 }

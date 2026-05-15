@@ -1,22 +1,14 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary border-opacity-10 py-3">
+<nav class="navbar-capstone" id="navbar">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="/">RENTAL<span class="text-primary">MOBIL</span></a>
-
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item"><a class="nav-link px-3" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link px-3" href="#">Armada</a></li>
-                <li class="nav-item"><a class="nav-link px-3" href="#">Syarat & Ketentuan</a></li>
-                @auth
-                    <li class="nav-item"><a class="nav-link px-3" href="#">My Bookings</a></li>
-                @endauth
-            </ul>
-
-            <div class="navbar-nav">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="#" class="nav-brand">CAP<span>STONE</span></a>
+            <div class="d-none d-lg-flex align-items-center gap-4">
+                <a href="{{ route('landing') }}#fleet" class="nav-link-capstone">Mobil</a>
+                <a href="{{ route('landing') }}#why" class="nav-link-capstone">Layanan</a>
+                <a href="{{ route('landing') }}#how" class="nav-link-capstone">Cara Sewa</a>
+                <a href="{{ route('landing') }}#testi" class="nav-link-capstone">Ulasan</a>
+            </div>
+            <div class="d-none d-md-flex align-items-center gap-2">
                 @auth
                     <div class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle btn btn-outline-secondary btn-sm px-3 text-white" href="#"
@@ -37,8 +29,11 @@
                         </ul>
                     </div>
                 @else
-                    <a class="btn btn-primary btn-sm px-4 rounded-pill fw-bold" href="/login">Login</a>
+                    <a href="{{ route('login') }}" class="btn-nav-login">
+                        <i class="bi bi-person"></i> LOGIN
+                    </a>
                 @endauth
+                <a href="#booking" class="btn-nav">PESAN SEKARANG</a>
             </div>
         </div>
     </div>

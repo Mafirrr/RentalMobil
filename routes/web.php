@@ -14,24 +14,28 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/vehicles', [AdminController::class, 'vehicles'])->name('admin.vehicles');
-    Route::get('/vehicles/create', [AdminController::class, 'createCar'])->name('admin.vehicles.create');
-    Route::post('/vehicles/store', [AdminController::class, 'storeCar'])->name('admin.vehicles.store');
-    Route::get('/vehicles/create', [AdminController::class, 'createCar'])->name('admin.vehicles.create');
-    Route::get('/vehicles/edit/{id}', [AdminController::class, 'editCar'])->name('admin.vehicles.edit');
-    Route::put('/vehicles/update/{id}', [AdminController::class, 'updateCar'])->name('admin.vehicles.update');
-    Route::put('/vehicles/{vehicle}/toggle-maintenance', [AdminController::class, 'toggleMaintenance'])->name('admin.vehicles.maintenance');
-    Route::delete('/vehicles/delete/{id}', [AdminController::class, 'destroy'])->name('admin.vehicles.destroy');
+    Route::prefix('vehicles')->group(function () {
+        Route::get('/', [AdminController::class, 'vehicles'])->name('admin.vehicles');
+        Route::get('/create', [AdminController::class, 'createCar'])->name('admin.vehicles.create');
+        Route::post('/store', [AdminController::class, 'storeCar'])->name('admin.vehicles.store');
+        Route::get('/edit/{id}', [AdminController::class, 'editCar'])->name('admin.vehicles.edit');
+        Route::put('/update/{id}', [AdminController::class, 'updateCar'])->name('admin.vehicles.update');
+        Route::put('/{vehicle}/toggle-maintenance', [AdminController::class, 'toggleMaintenance'])->name('admin.vehicles.maintenance');
+        Route::delete('/delete/{id}', [AdminController::class, 'destroy'])->name('admin.vehicles.destroy');
+    });
 
-    Route::get('/rental', [PenyewaController::class, 'index'])->name('admin.rentals');
-    Route::post('/rental/add', [PenyewaController::class, 'store'])->name('admin.rentals.store');
-    Route::put('/rental/return/{id}', [PenyewaController::class, 'update'])->name('admin.rentals.return');
-    Route::put('/rental/{rental}/cancel', [PenyewaController::class, 'cancel'])->name('admin.rentals.cancel');
-    Route::get('/rental/report', [PenyewaController::class, 'report'])->name('admin.report');
+    Route::prefix('rental')->group(function () {
+        Route::get('/', [PenyewaController::class, 'index'])->name('admin.rentals');
+        Route::post('/add', [PenyewaController::class, 'store'])->name('admin.rentals.store');
+        Route::put('/return/{id}', [PenyewaController::class, 'update'])->name('admin.rentals.return');
+        Route::put('/{rental}/cancel', [PenyewaController::class, 'cancel'])->name('admin.rentals.cancel');
+        Route::get('/report', [PenyewaController::class, 'report'])->name('admin.report');
+    });
 });
+
 Route::get('/kendaraan', function () {
     return view('category');
 })->name('category');
