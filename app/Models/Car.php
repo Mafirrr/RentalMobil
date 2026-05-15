@@ -9,13 +9,13 @@ class Car extends Model
 {
     protected $fillable = [
         'vehicle_id',
-        'engine_capacity',
-        'includes_helmet',
+        'capacity',
+        'fuel_type',
         'transmission'
     ];
 
     public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 }

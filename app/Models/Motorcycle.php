@@ -9,13 +9,13 @@ class Motorcycle extends Model
 {
     protected $fillable = [
         'vehicle_id',
-        'capacity',
+        'engine_capacity',
         'transmission',
-        'fuel_type'
+        'includes_helmet'
     ];
 
     public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 }

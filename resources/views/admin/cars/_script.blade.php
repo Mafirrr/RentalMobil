@@ -2,7 +2,87 @@
     let currentStep = 1;
     const totalSteps = 5;
 
+    function updateVehicleUI(type) {
+        const specCar = document.getElementById('spec_car');
+        const specMotor = document.getElementById('spec_motor');
+        const transSelect = document.getElementById('transmission_select');
+
+        if (!specCar || !specMotor) return;
+
+        const carInputs = specCar.querySelectorAll('input, select');
+        const motorInputs = specMotor.querySelectorAll('input, select');
+
+        if (type === 'car') {
+            specCar.classList.remove('d-none');
+            specMotor.classList.add('d-none');
+            carInputs.forEach(i => i.disabled = false);
+            motorInputs.forEach(i => i.disabled = true);
+
+            transSelect.innerHTML = `
+                <option value="" selected disabled>Pilih Transmisi Mobil</option>
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+            `;
+        } else {
+            specCar.classList.add('d-none');
+            specMotor.classList.remove('d-none');
+            carInputs.forEach(i => i.disabled = true);
+            motorInputs.forEach(i => i.disabled = false);
+
+            transSelect.innerHTML = `
+                <option value="" selected disabled>Pilih Transmisi Motor</option>
+                <option value="Matic">Matic</option>
+                <option value="Manual">Manual</option>
+            `;
+        }
+
+        const savedTrans =
+            "{{ old('transmission', $vehicle->car->transmission ?? ($vehicle->motorcycle->transmission ?? '')) }}";
+        if (savedTrans) {
+            transSelect.value = savedTrans;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkedInput = document.querySelector('input[name="vehicle_type"]:checked');
+        if (checkedInput) {
+            updateVehicleUI(checkedInput.value);
+        }
+
+        document.querySelectorAll('input[name="vehicle_type"]').forEach((elem) => {
+            elem.addEventListener("change", function() {
+                updateVehicleUI(this.value);
+            });
+        });
+
+        const rateInput = document.getElementById('daily_rate');
+        if (rateInput && rateInput.value) {
+            rateInput.dispatchEvent(new Event('input'));
+        }
+
+        toggleButtons();
+    });
+
+    function validateStep(step) {
+        const activeStep = document.getElementById(`step-${step}`);
+        const inputs = activeStep.querySelectorAll(
+            'input[required]:not(:disabled), select[required]:not(:disabled), #daily_rate_display[required]');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (!input.value) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        return isValid;
+    }
+
     document.getElementById('nextBtn').addEventListener('click', () => {
+        if (!validateStep(currentStep)) return;
+
         if (currentStep < totalSteps) {
             document.getElementById(`step-${currentStep}`).classList.add('d-none');
             currentStep++;
@@ -21,6 +101,47 @@
             toggleButtons();
         }
     });
+
+    function formatRupiah(angka) {
+        let number_string = angka.replace(/[^,\d]/g, '').toString(),
+            split = number_string.split(','),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            let separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+
+        return rupiah;
+    }
+    const displayInput = document.getElementById('daily_rate_display');
+    const realInput = document.getElementById('daily_rate_real');
+
+    if (displayInput) {
+        displayInput.addEventListener('input', function(e) {
+            let rawValue = this.value.replace(/[^0-9]/g, '');
+            realInput.value = rawValue;
+            this.value = formatRupiah(rawValue);
+            const preview = document.getElementById('formatted_price_preview');
+            if (rawValue) {
+                preview.innerText = "Terbaca: Rp " + new Intl.NumberFormat('id-ID').format(rawValue);
+            } else {
+                preview.innerText = "";
+            }
+        });
+    }
+
+    function toggleButtons() {
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (prevBtn) prevBtn.classList.toggle('d-none', currentStep === 1);
+        if (nextBtn) nextBtn.classList.toggle('d-none', currentStep === totalSteps);
+        if (submitBtn) submitBtn.classList.toggle('d-none', currentStep !== totalSteps);
+    }
 
     function updateStepper(step) {
         document.querySelectorAll('.step-item').forEach((item, index) => {
@@ -48,16 +169,6 @@
                 number.classList.replace('text-white', 'text-secondary');
             }
         });
-    }
-
-    function toggleButtons() {
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
-
-        prevBtn.classList.toggle('d-none', currentStep === 1);
-        nextBtn.classList.toggle('d-none', currentStep === totalSteps);
-        submitBtn.classList.toggle('d-none', currentStep !== totalSteps);
     }
 </script>
 

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Category;
+use App\Models\Motorcycle;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -15,9 +18,13 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-    public function cars(Request $request)
+    public function vehicles(Request $request)
     {
-        $query = Car::query();
+        $query = Vehicle::query()->with(['car', 'motorcycle']);
+
+        if ($request->filled('type')) {
+            $query->where('vehicle_type', $request->type);
+        }
 
         if ($request->has('search')) {
             $query->where('model', 'like', '%' . $request->search . '%')
@@ -28,9 +35,9 @@ class AdminController extends Controller
             $query->where('status', $request->status);
         }
 
-        $cars = $query->latest()->get();
+        $vehicles = $query->latest()->paginate(11)->withQueryString();
 
-        return view('admin.cars.index', compact('cars'));
+        return view('admin.cars.index', compact('vehicles'));
     }
 
     public function createCar()
@@ -41,91 +48,113 @@ class AdminController extends Controller
 
     public function storeCar(Request $request)
     {
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'model' => 'required|string|max:255',
-            'plate_number' => 'required|string|unique:cars,plate_number',
-            'capacity' => 'required|integer',
-            'year' => 'required|integer',
-            'daily_rate' => 'required|numeric',
-            'color' => 'required|string',
-        ]);
+        $type = $request->vehicle_type;
 
-        Car::create([
-            'category_id' => $request->category_id,
-            'model' => $request->model,
-            'plate_number' => $request->plate_number,
-            'capacity' => $request->capacity,
-            'year' => $request->year,
-            'daily_rate' => $request->daily_rate,
-            'color' => $request->color,
-            'status' => 'available'
-        ]);
+        DB::beginTransaction();
+        try {
+            $vehicle = Vehicle::create([
+                'category_id' => $request->category_id,
+                'vehicle_type' => $type,
+                'model' => $request->model,
+                'plate_number' => $request->plate_number,
+                'year' => $request->year ?? date('Y'),
+                'color' => $request->color ?? 'Hitam',
+                'daily_rate' => $request->daily_rate,
+            ]);
 
-        return redirect()->route('admin.cars')->with('success', 'Mobil berhasil ditambahkan!');
+            if ($type === 'car') {
+                Car::create([
+                    'vehicle_id' => $vehicle->id,
+                    'capacity' => $request->capacity,
+                    'transmission' => $request->transmission,
+                    'fuel_type' => $request->fuel_type,
+                ]);
+            } else {
+                Motorcycle::create([
+                    'vehicle_id' => $vehicle->id,
+                    'engine_capacity' => $request->engine_capacity,
+                    'includes_helmet' => $request->includes_helmet,
+                    'transmission' => $request->transmission,
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('admin.vehicles')->with('success', 'Armada berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            DB::rollback();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function editCar($id)
     {
-        $car = Car::findOrFail($id);
+        $vehicle = Vehicle::with(['car', 'motorcycle'])->findOrFail($id);
         $categories = Category::all();
-        return view('admin.cars.edit', compact('car', 'categories'));
+        return view('admin.cars.edit', compact('vehicle', 'categories'));
     }
 
     public function updateCar(Request $request, $id)
     {
-        $car = Car::findOrFail($id);
+        $vehicle = Vehicle::findOrFail($id);
 
-        $validated = $request->validate([
-            'model' => 'required|string',
-            'category_id' => 'required',
-            'plate_number' => 'required|unique:cars,plate_number,' . $car->id,
-            'year' => 'required|numeric',
-            'daily_rate' => 'required|numeric',
-        ]);
+        DB::beginTransaction();
+        try {
+            $vehicle->update([
+                'category_id' => $request->category_id,
+                'model' => $request->model,
+                'plate_number' => $request->plate_number,
+                'year' => $request->year ?? date('Y'),
+                'color' => $request->color ?? 'Hitam',
+                'daily_rate' => $request->daily_rate,
+            ]);
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('cars', 'public');
-            $car->image = $imagePath;
+            if ($vehicle->vehicle_type === 'car') {
+                $vehicle->car()->update([
+                    'capacity' => $request->capacity,
+                    'transmission' => $request->transmission,
+                    'fuel_type' => $request->fuel_type,
+                ]);
+            } else {
+                $vehicle->motorcycle()->update([
+                    'engine_capacity' => $request->engine_capacity,
+                    'includes_helmet' => $request->includes_helmet,
+                    'transmission' => $request->transmission,
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('admin.vehicles')->with('success', 'Armada berhasil diupdate!');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            DB::rollback();
+            return back()->with('error', $e->getMessage());
         }
-
-        $car->update([
-            'model' => $validated['model'],
-            'category_id' => $validated['category_id'],
-            'plate_number' => $validated['plate_number'],
-            'year' => $validated['year'],
-            'daily_rate' => $validated['daily_rate'],
-            'color' => $request->color,
-            'capacity' => $request->capacity,
-            'transmission' => $request->transmission,
-        ]);
-
-        return redirect()->route('admin.cars')->with('success', 'Data armada ' . $car->model . ' berhasil diperbarui!');
     }
 
-    public function toggleMaintenance(Car $car)
+    public function toggleMaintenance(Vehicle $vehicle)
     {
 
-        $newStatus = ($car->status === 'available') ? 'maintenance' : 'available';
+        $newStatus = ($vehicle->status === 'available') ? 'maintenance' : 'available';
 
-        if ($car->status === 'rented') {
+        if ($vehicle->status === 'rented') {
             return redirect()->back()->with('error', 'Mobil sedang disewa, tidak bisa masuk mode maintenance.');
         }
 
-        $car->update(['status' => $newStatus]);
+        $vehicle->update(['status' => $newStatus]);
 
         return redirect()->back()->with('success', 'Status armada berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        $car = Car::findOrFail($id);
+        $vehicle = Vehicle::findOrFail($id);
 
-        if ($car->image) {
-            Storage::delete('public/' . $car->image);
+        if ($vehicle->image) {
+            Storage::delete('public/' . $vehicle->image);
         }
 
-        $car->delete();
+        $vehicle->delete();
 
         return redirect()->back()->with('success', 'Armada berhasil dihapus!');
     }

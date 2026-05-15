@@ -23,19 +23,19 @@ class Vehicle extends Model
     // Relasi ke kategori
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     // Relasi ke detail mobil
-    public function carDetail(): HasOne
+    public function car(): HasOne
     {
-        return $this->hasOne(Car::class);
+        return $this->hasOne(Car::class, 'vehicle_id');
     }
 
     // Relasi ke detail motor
-    public function motorcycleDetail(): HasOne
+    public function motorcycle(): HasOne
     {
-        return $this->hasOne(Motorcycle::class);
+        return $this->hasOne(Motorcycle::class, 'vehicle_id');
     }
 
     public function rentals(): HasMany
