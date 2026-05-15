@@ -70,7 +70,7 @@
                         class="bi bi-speedometer2 me-3"></i>Dashboard
                 </a></li>
 
-            <a href="{{ route('admin.cars') }}" class="nav-link {{ Route::is('admin.cars*') ? 'active' : '' }}">
+            <a href="{{ route('admin.vehicles') }}" class="nav-link {{ Route::is('admin.vehicles*') ? 'active' : '' }}">
                 <i class="bi bi-car-front me-3"></i>Armada
             </a>
             <li><a href="{{ route('admin.rentals') }}"
@@ -95,7 +95,7 @@
             <h4 class="fw-bold">
                 @if (Route::is('admin.dashboard'))
                     Dashboard
-                @elseif(Route::is('admin.cars*'))
+                @elseif(Route::is('admin.vehicles*'))
                     Manajemen Armada
                 @elseif(Route::is('admin.rentals*'))
                     Input Penyewaan

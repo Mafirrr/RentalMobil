@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         $admin = User::create([
             'username' => 'admin_rental',
-            'email' => 'admin@inovasikita.com',
+            'email' => 'admin@capstone.com',
             'password' => Hash::make('password123'),
             'role' => 'admin',
         ]);
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
                 'username' => $data['username'],
                 'email' => $data['email'],
                 'password' => Hash::make('password123'),
-                'role' => 'karyawan',
+                'role' => 'penyewa',
             ]);
 
             UserDetail::create([
