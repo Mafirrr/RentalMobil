@@ -3,8 +3,11 @@
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\admin\RentalController;
+use App\Http\Controllers\DetailController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PenyewaController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/',  [LandingController::class, 'index'])->name('landing');
@@ -36,21 +39,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     });
 });
 
-Route::get('/kendaraan', function () {
-    return view('category');
-})->name('category');
+Route::get('/kendaraan', [LandingController::class, 'category'])->name('category');
 
-Route::get('/detail', function () {
-    return view('detail');
-})->name('detail');
-Route::get('/pembayaran', function () {
-    return view('pembayaran');
-})->name('pembayaran');
+Route::get('/detail/{id}', [DetailController::class, 'detail'])->name('detail');
+
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/rent', [RentalController::class, 'store'])->name('rental.store');
-    Route::get('/my-bookings', function () {
-        return view('customer.bookings');
-    })->name('customer.bookings');
+    Route::post('/vehicle/{id}/wishlist', [WishlistController::class, 'toggleWishlist'])->name('vehicle.wishlist');
+    Route::post('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
+    Route::post('/pembayaran/tripay-api', [PaymentController::class, 'generateTripayPayment']);
+    Route::post('/rentals/store', [PaymentController::class, 'store']);
 });

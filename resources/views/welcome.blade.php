@@ -998,72 +998,6 @@
             </div>
 
             <div class="row g-4">
-                {{-- Car Card 1 --}}
-                @php
-                    $cars = [
-                        [
-                            'badge' => 'TERLARIS',
-                            'cat' => 'City Car',
-                            'name' => 'Toyota Yaris',
-                            'seats' => 5,
-                            'trans' => 'Matic',
-                            'fuel' => 'Bensin',
-                            'price' => '350.000',
-                            'color' => 'Putih Pearl',
-                        ],
-                        [
-                            'badge' => 'POPULER',
-                            'cat' => 'SUV',
-                            'name' => 'Fortuner VRZ',
-                            'seats' => 7,
-                            'trans' => 'Matic',
-                            'fuel' => 'Diesel',
-                            'price' => '750.000',
-                            'color' => 'Hitam Metalik',
-                        ],
-                        [
-                            'badge' => 'PREMIUM',
-                            'cat' => 'Sedan Mewah',
-                            'name' => 'BMW 320i',
-                            'seats' => 5,
-                            'trans' => 'Matic',
-                            'fuel' => 'Bensin',
-                            'price' => '1.200.000',
-                            'color' => 'Abu Titanium',
-                        ],
-                        [
-                            'badge' => 'BARU',
-                            'cat' => 'MPV',
-                            'name' => 'Innova Zenix',
-                            'seats' => 7,
-                            'trans' => 'Matic',
-                            'fuel' => 'Hybrid',
-                            'price' => '600.000',
-                            'color' => 'Silver',
-                        ],
-                        [
-                            'badge' => 'HEMAT',
-                            'cat' => 'City Car',
-                            'name' => 'Honda Brio',
-                            'seats' => 5,
-                            'trans' => 'Manual',
-                            'fuel' => 'Bensin',
-                            'price' => '250.000',
-                            'color' => 'Merah',
-                        ],
-                        [
-                            'badge' => 'EKSKLUSIF',
-                            'cat' => 'Luxury SUV',
-                            'name' => 'Alphard HEV',
-                            'seats' => 7,
-                            'trans' => 'Matic',
-                            'fuel' => 'Hybrid',
-                            'price' => '1.800.000',
-                            'color' => 'Putih Pearl',
-                        ],
-                    ];
-                @endphp
-
                 @foreach ($vehicles as $index => $car)
                     <div class="col-lg-4 col-md-6 fade-up" style="transition-delay: {{ $index * 0.07 }}s">
                         <div class="car-card">
@@ -1299,7 +1233,6 @@
         </div>
     </section>
 
-    {{-- ── TESTIMONIALS ── --}}
     <section class="testi-section" id="testi">
         <div class="container">
             <div class="text-center mb-5">
@@ -1378,3 +1311,17 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        function preventBack() {
+            window.history.forward();
+        }
+
+        setTimeout("preventBack()", 0);
+
+        window.onunload = function() {
+            null
+        };
+    </script>
+@endpush

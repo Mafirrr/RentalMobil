@@ -103,7 +103,7 @@
                                         style="width: 12px; height: 12px; background-color: {{ $vehicle->status == 'available' ? '#2ecc71' : '#e74c3c' }};">
                                     </div>
                                     <span
-                                        class="small text-secondary">{{ ($vehicle->status == 'available' ? 'Tersedia' : $vehicle->status == 'rented') ? 'Disewa' : 'Perbaikan' }}</span>
+                                        class="small text-secondary">{{ $vehicle->status == 'available' ? 'Tersedia' : ($vehicle->status == 'rented' ? 'Disewa' : 'Perbaikan') }}</span>
                                 </div>
 
                                 <div class="d-flex gap-2">

@@ -22,6 +22,8 @@ class Rental extends Model
         'rental_date',
         'return_date_scheduled',
         'duration',
+        'pickup_location',
+        'deliver_to_location',
         'total_price',
         'amount_paid',
         'status',

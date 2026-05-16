@@ -1,15 +1,13 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Kendaraan — CAPSTONE Car Rental</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+@section('title', 'Detail Kendaraan — CAPSTONE Car Rental')
+
+@php
+    $detailPage = true;
+    $hideFooter = true;
+@endphp
+
+@push('styles')
     <style>
         *,
         *::before,
@@ -53,7 +51,6 @@
             border-radius: 2px;
         }
 
-        /* NAV */
         nav {
             display: flex;
             align-items: center;
@@ -65,6 +62,14 @@
             z-index: 100;
             background: rgba(10, 10, 12, 0.92);
             backdrop-filter: blur(20px);
+        }
+
+        .container-detail {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            /* Memberikan ruang aman di sisi kiri dan kanan */
         }
 
         .nav-brand {
@@ -164,6 +169,10 @@
 
         .breadcrumb-velox .current {
             color: var(--accent);
+        }
+
+        main {
+            padding-top: 100px;
         }
 
         /* GALLERY */
@@ -758,35 +767,17 @@
             }
         }
     </style>
-</head>
-
-<body>
-
-    {{-- NAVBAR --}}
-    <nav>
-        <a href="{{ url('/') }}" class="nav-brand">CAP<span>STONE</span></a>
-        <div class="nav-links">
-            <a href="{{ route('category') }}">Kendaraan</a>
-            <a href="{{ url('/') }}#why">Layanan</a>
-            <a href="{{ url('/') }}#how">Cara Sewa</a>
-            <a href="{{ url('/') }}#testi">Ulasan</a>
-        </div>
-        <a href="{{ route('category') }}" class="nav-back">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </a>
-    </nav>
-
+@endpush
+@section('content')
     <div class="container">
-
-        {{-- BREADCRUMB --}}
         <div class="breadcrumb-velox">
             <a href="{{ url('/') }}">Beranda</a>
             <span class="sep">/</span>
             <a href="{{ route('category') }}">Semua Kendaraan</a>
             <span class="sep">/</span>
-            <span>SUV</span>
+            <span>{{ $vehicle->category->name }}</span>
             <span class="sep">/</span>
-            <span class="current">Fortuner VRZ</span>
+            <span class="current">{{ $vehicle->model }}</span>
         </div>
 
         {{-- MAIN GRID --}}
@@ -803,12 +794,11 @@
                         <path d="M210,220 L260,140 L540,140 L590,220 Z" fill="#1e1e28" />
                         <path d="M535,220 L560,155 L540,140 L490,220 Z" fill="#1e2a40" opacity="0.9" />
                         <path d="M265,220 L260,140 L300,140 L310,220 Z" fill="#1e2a40" opacity="0.9" />
-                        <rect x="315" y="150" width="175" height="65" rx="4" fill="#1a2638"
-                            opacity="0.95" />
-                        <line x1="400" y1="150" x2="400" y2="350"
-                            stroke="rgba(255,255,255,0.04)" stroke-width="1" />
-                        <line x1="490" y1="150" x2="490" y2="350"
-                            stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+                        <rect x="315" y="150" width="175" height="65" rx="4" fill="#1a2638" opacity="0.95" />
+                        <line x1="400" y1="150" x2="400" y2="350" stroke="rgba(255,255,255,0.04)"
+                            stroke-width="1" />
+                        <line x1="490" y1="150" x2="490" y2="350" stroke="rgba(255,255,255,0.04)"
+                            stroke-width="1" />
                         <path d="M650,240 L690,248 L690,278 L650,285 Z" fill="#141419" />
                         <path d="M655,248 L682,254 L682,272 L655,278 Z" fill="#c8ff00" opacity="0.7" />
                         <rect x="655" y="290" width="40" height="30" rx="4" fill="#0e0e12" />
@@ -819,8 +809,7 @@
                         <line x1="685" y1="295" x2="685" y2="315" stroke="#222228"
                             stroke-width="1" />
                         <path d="M110,255 L120,248 L120,285 L110,278 Z" fill="#141419" />
-                        <rect x="110" y="255" width="12" height="30" rx="2" fill="#cc2222"
-                            opacity="0.8" />
+                        <rect x="110" y="255" width="12" height="30" rx="2" fill="#cc2222" opacity="0.8" />
                         <rect x="655" y="320" width="48" height="25" rx="6" fill="#0e1014" />
                         <rect x="100" y="320" width="48" height="25" rx="6" fill="#0e1014" />
                         <circle cx="230" cy="355" r="48" fill="#080809" />
@@ -850,13 +839,13 @@
                             stroke-width="3" />
                         <circle cx="570" cy="355" r="6" fill="#c8ff00" opacity="0.4" />
                         <rect x="270" y="136" width="260" height="6" rx="3" fill="#222230" />
-                        <line x1="110" y1="295" x2="695" y2="295"
-                            stroke="rgba(200,255,0,0.12)" stroke-width="1.5" />
+                        <line x1="110" y1="295" x2="695" y2="295" stroke="rgba(200,255,0,0.12)"
+                            stroke-width="1.5" />
                         <text x="400" y="418" text-anchor="middle" font-family="monospace" font-size="11"
                             fill="rgba(255,255,255,0.1)" letter-spacing="6">FORTUNER VRZ 4×4</text>
                     </svg>
-                    <div class="badge-status">TERSEDIA</div>
-                    <div class="badge-year">2022</div>
+                    <div class="badge-status">{{ $vehicle->status }}</div>
+                    <div class="badge-year">{{ $vehicle->year }}</div>
                 </div>
 
                 <div class="thumbnails">
@@ -865,49 +854,45 @@
                     <div class="thumb">INTERIOR</div>
                     <div class="thumb">MESIN</div>
                 </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-                        <div class="stat-label">Tenaga</div>
-                        <div class="stat-value">204 HP</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="bi bi-gear-fill"></i></div>
-                        <div class="stat-label">Transmisi</div>
-                        <div class="stat-value">6-Spd AT</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="bi bi-droplet-fill"></i></div>
-                        <div class="stat-label">BBM</div>
-                        <div class="stat-value">11.2 L/100</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="bi bi-speedometer2"></i></div>
-                        <div class="stat-label">Kilometer</div>
-                        <div class="stat-value">32.500 KM</div>
-                    </div>
-                </div>
             </div>
 
             {{-- RIGHT: INFO PANEL --}}
             <div class="info-panel">
                 <div>
-                    <div class="brand-tag">Toyota · SUV · 4×4</div>
-                    <h1>Fortuner <span>VRZ</span></h1>
+                    <div class="brand-tag">{{ $vehicle->category->name }}</div>
+                    <h1>{{ $vehicle->model }}</h1>
                     <div class="rating-row">
-                        <div class="stars">★★★★★</div>
-                        <span class="rating-num">4.9</span>
-                        <span class="rating-count">(128 ulasan)</span>
-                        <div class="status-available">TERSEDIA</div>
+                        @php
+                            $fullStars = floor($rating);
+                            $halfStar = $rating - $fullStars >= 0.5 ? 1 : 0;
+                            $emptyStars = 5 - $fullStars - $halfStar;
+                        @endphp
+                        <div class="stars">
+                            @for ($i = 0; $i < $fullStars; $i++)
+                                <i class="bi bi-star-fill"></i>
+                            @endfor
+                            @if ($halfStar)
+                                <i class="bi bi-star-half"></i>
+                            @endif
+                            @for ($i = 0; $i < $emptyStars; $i++)
+                                <i class="bi bi-star"></i>
+                            @endfor
+                            <span class="rating-num">{{ number_format($rating, 1) }}</span>
+                        </div>
+                        <span class="rating-num">{{ $rating }}</span>
+                        <span class="rating-count">({{ $total_ulasan }} ulasan)</span>
+                        <div class="status-available">{{ $vehicle->status }}</div>
                     </div>
                 </div>
 
                 <div>
                     <div class="price-row">
-                        <div class="price-main">Rp 750.000</div>
-                        <div class="price-old">Rp 850.000</div>
-                        <div class="price-badge">−12%</div>
+                        <div class="price-main">Rp {{ number_format($vehicle->daily_rate, 0, ',', '.') }}</div>
+                        @if (isset($hargaLama) && $vehicle->daily_rate < $hargaLama)
+                            <div class="price-old">Rp {{ number_format($hargaLama, 0, ',', '.') }}</div>
+                            <div class="price-badge">
+                                -{{ round((($hargaLama - $vehicle->daily_rate) / $hargaLama) * 100) }}%</div>
+                        @endif
                     </div>
                     <div class="price-sub" style="margin-top:6px;">per hari · Termasuk asuransi dasar</div>
                 </div>
@@ -919,27 +904,32 @@
                     <div class="tabs">
                         <button class="tab active" onclick="switchTab('spek', this)">Spesifikasi</button>
                         <button class="tab" onclick="switchTab('fitur', this)">Fitur</button>
-                        <button class="tab" onclick="switchTab('kondisi', this)">Kondisi</button>
                     </div>
 
                     <div id="tab-spek" class="tab-content active" style="padding-top:0.75rem;">
                         <div class="spec-list">
                             <div class="spec-row"><span class="spec-key">Tahun</span><span
-                                    class="spec-val">2022</span></div>
-                            <div class="spec-row"><span class="spec-key">Warna</span><span class="spec-val">Hitam
-                                    Metalik</span></div>
-                            <div class="spec-row"><span class="spec-key">Mesin</span><span class="spec-val">2.4L
-                                    Diesel Turbo</span></div>
-                            <div class="spec-row"><span class="spec-key">Kapasitas CC</span><span
-                                    class="spec-val">2.393 cc</span></div>
-                            <div class="spec-row"><span class="spec-key">Torsi Maks</span><span class="spec-val">500
-                                    Nm @ 1.600 rpm</span></div>
-                            <div class="spec-row"><span class="spec-key">Penggerak</span><span class="spec-val">4×4
-                                    (AWD)</span></div>
-                            <div class="spec-row"><span class="spec-key">Kapasitas</span><span class="spec-val">7
-                                    Penumpang</span></div>
-                            <div class="spec-row"><span class="spec-key">STNK s/d</span><span
-                                    class="spec-val">Desember 2026</span></div>
+                                    class="spec-val">{{ $vehicle->year }}</span>
+                            </div>
+                            <div class="spec-row"><span class="spec-key">Warna</span><span
+                                    class="spec-val">{{ $vehicle->color }}</span></div>
+                            <div class="spec-row"><span class="spec-key">Tipe</span><span
+                                    class="spec-val">{{ $vehicle->category->name }}
+                                </span></div>
+                            @if ($vehicle->vehicle_type == 'car')
+                                <div class="spec-row"><span class="spec-key">Kapasitas</span><span
+                                        class="spec-val">{{ $vehicle->car->capacity }}
+                                        Penumpang</span></div>
+                                <div class="spec-row"><span class="spec-key">Jenis Bahan Bakar</span><span
+                                        class="spec-val">{{ $vehicle->car->fuel_type }}</span></div>
+                            @else
+                                <div class="spec-row"><span class="spec-key">Kapasitas CC</span><span
+                                        class="spec-val">{{ $vehicle->motorcycle->engine_capacity }}
+                                        cc</span></div>
+                                <div class="spec-row"><span class="spec-key">Kapasitas CC</span><span
+                                        class="spec-val">{{ $vehicle->motorcycle->includes_helmet == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
+                                    </span></div>
+                            @endif
                         </div>
                     </div>
 
@@ -984,22 +974,6 @@
                         </div>
                     </div>
 
-                    <div id="tab-kondisi" class="tab-content" style="padding-top:0.75rem;">
-                        <div class="spec-list">
-                            <div class="spec-row"><span class="spec-key">Kondisi Body</span><span class="spec-val"
-                                    style="color:var(--green)">Sangat Baik</span></div>
-                            <div class="spec-row"><span class="spec-key">Interior</span><span class="spec-val"
-                                    style="color:var(--green)">Bersih</span></div>
-                            <div class="spec-row"><span class="spec-key">Cat</span><span class="spec-val">Original
-                                    (95%)</span></div>
-                            <div class="spec-row"><span class="spec-key">Rangka</span><span class="spec-val"
-                                    style="color:var(--green)">Tidak Ada Bengkok</span></div>
-                            <div class="spec-row"><span class="spec-key">Buku Service</span><span class="spec-val"
-                                    style="color:var(--green)">Lengkap</span></div>
-                            <div class="spec-row"><span class="spec-key">Inspeksi</span><span class="spec-val"
-                                    style="color:var(--green)">168 Titik ✓</span></div>
-                        </div>
-                    </div>
                 </div>
 
                 <hr class="divider">
@@ -1014,29 +988,29 @@
                         <div class="dealer-verified"><i class="bi bi-patch-check-fill"></i> DEALER TERVERIFIKASI ·
                             RESPONS CEPAT</div>
                     </div>
-                    <div style="text-align:right;">
-                        <div
-                            style="font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">
-                            Stok</div>
-                        <div
-                            style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--green);letter-spacing:0.05em;">
-                            8 Unit</div>
-                    </div>
+
                 </div>
 
-                {{-- ACTIONS --}}
                 <div class="actions">
-                    <a href="{{ route('pembayaran') }}" class="btn-primary" style="text-decoration:none;">
-                        <i class="bi bi-calendar2-check"></i> PESAN SEKARANG
-                    </a>
+                    <form action="{{ route('pembayaran') }}" method="POST" id="bookingForm">
+                        @csrf
+                        <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+
+                        <button type="submit" class="btn-primary" id="bookingBtn" style="border: none; width: 100%;"
+                            data-auth="{{ Auth::check() ? 'true' : 'false' }}">
+                            <i class="bi bi-calendar2-check"></i> PESAN SEKARANG
+                        </button>
+                    </form>
                     <div class="btn-row">
                         <button class="btn-secondary">
                             <i class="bi bi-chat-dots"></i> Hubungi Dealer
                         </button>
-                        <button class="btn-icon" id="saveBtn" title="Simpan" onclick="toggleSave(this)">
-                            <i class="bi bi-heart"></i>
+                        <button class="btn-icon {{ $isSaved ? 'saved' : '' }}" id="saveBtn" title="Simpan"
+                            data-id="{{ $vehicle->id }}">
+                            <i class="bi {{ $isSaved ? 'bi-heart-fill' : 'bi-heart' }}"></i>
                         </button>
-                        <button class="btn-icon" title="Bagikan">
+                        <button class="btn-icon" id="shareBtn" title="Bagikan"
+                            data-title="Sewa {{ $vehicle->name }} - CAPSTONE" data-url="{{ url()->current() }}">
                             <i class="bi bi-share"></i>
                         </button>
                     </div>
@@ -1049,80 +1023,78 @@
         <div style="margin-top:3.5rem;">
             <div class="section-title">Kendaraan Serupa</div>
             <div class="similar-grid">
-                <a href="{{ route('detail') }}" class="similar-card">
-                    <div class="similar-img">
-                        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
-                            style="width:100%;height:100%;">
-                            <rect width="300" height="200" fill="#111115" />
-                            <ellipse cx="150" cy="170" rx="120" ry="12"
-                                fill="rgba(0,0,0,0.4)" />
-                            <rect x="30" y="100" width="240" height="65" rx="10" fill="#1a1a22" />
-                            <path d="M65,100 L82,68 L218,68 L235,100 Z" fill="#1e1e28" />
-                            <circle cx="75" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="75" cy="168" r="14" fill="#111115" />
-                            <circle cx="225" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="225" cy="168" r="14" fill="#111115" />
-                        </svg>
-                    </div>
-                    <div class="similar-info">
-                        <div class="similar-name">Mitsubishi Pajero Sport</div>
-                        <div class="similar-price">Rp 700.000 / hari</div>
-                        <div class="similar-meta">SUV · 7 Kursi · Diesel</div>
-                    </div>
-                </a>
-                <a href="{{ route('detail') }}" class="similar-card">
-                    <div class="similar-img">
-                        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
-                            style="width:100%;height:100%;">
-                            <rect width="300" height="200" fill="#111115" />
-                            <ellipse cx="150" cy="170" rx="120" ry="12"
-                                fill="rgba(0,0,0,0.4)" />
-                            <rect x="30" y="102" width="240" height="62" rx="10" fill="#1e1820" />
-                            <path d="M68,102 L86,70 L214,70 L232,102 Z" fill="#221828" />
-                            <circle cx="75" cy="166" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="75" cy="166" r="14" fill="#111115" />
-                            <circle cx="225" cy="166" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="225" cy="166" r="14" fill="#111115" />
-                        </svg>
-                    </div>
-                    <div class="similar-info">
-                        <div class="similar-name">Honda CR-V Turbo</div>
-                        <div class="similar-price">Rp 680.000 / hari</div>
-                        <div class="similar-meta">SUV · 5 Kursi · Bensin</div>
-                    </div>
-                </a>
-                <a href="{{ route('detail') }}" class="similar-card">
-                    <div class="similar-img">
-                        <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
-                            style="width:100%;height:100%;">
-                            <rect width="300" height="200" fill="#111115" />
-                            <ellipse cx="150" cy="170" rx="120" ry="12"
-                                fill="rgba(0,0,0,0.4)" />
-                            <rect x="30" y="100" width="240" height="65" rx="10" fill="#141a1c" />
-                            <path d="M65,100 L80,65 L220,65 L235,100 Z" fill="#18242a" />
-                            <circle cx="75" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="75" cy="168" r="14" fill="#111115" />
-                            <circle cx="225" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                stroke-width="2" />
-                            <circle cx="225" cy="168" r="14" fill="#111115" />
-                        </svg>
-                    </div>
-                    <div class="similar-info">
-                        <div class="similar-name">Innova Zenix Hybrid</div>
-                        <div class="similar-price">Rp 600.000 / hari</div>
-                        <div class="similar-meta">MPV · 7 Kursi · Hybrid</div>
-                    </div>
-                </a>
+                @foreach ($similar_vehicles as $vehicle)
+                    <a href="{{ route('detail', $vehicle->id) }}" class="similar-card">
+                        <div class="similar-img">
+                            <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
+                                style="width:100%;height:100%;">
+                                <rect width="300" height="200" fill="#111115" />
+                                <ellipse cx="150" cy="170" rx="120" ry="12"
+                                    fill="rgba(0,0,0,0.4)" />
+                                <rect x="30" y="100" width="240" height="65" rx="10" fill="#1a1a22" />
+                                <path d="M65,100 L82,68 L218,68 L235,100 Z" fill="#1e1e28" />
+                                <circle cx="75" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
+                                    stroke-width="2" />
+                                <circle cx="75" cy="168" r="14" fill="#111115" />
+                                <circle cx="225" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
+                                    stroke-width="2" />
+                                <circle cx="225" cy="168" r="14" fill="#111115" />
+                            </svg>
+                        </div>
+                        <div class="similar-info">
+                            <div class="similar-name">{{ $vehicle->model }}</div>
+                            <div class="similar-price">Rp {{ number_format($vehicle->daily_rate, 0, ',', '.') }} / hari
+                            </div>
+                            @if ($vehicle->vehicle_type == 'car')
+                                <div class="similar-meta">{{ $vehicle->category->name }} · {{ $vehicle->car->capacity }}
+                                    Kursi ·
+                                    {{ $vehicle->car->fuel_type }}</div>
+                            @else
+                                <div class="similar-meta">{{ $vehicle->category->name }} ·
+                                    {{ $vehicle->motorcycle->engine_capacity }}
+                                    CC</div>
+                            @endif
+                        </div>
+                    </a>
+                @endforeach
             </div>
         </div>
-
     </div>
 
+    <div class="modal fade" id="loginAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center py-4 px-3"
+                style="background: #111114; border: 1px solid var(--border); border-radius: 4px;">
+                <div class="modal-body">
+                    <div class="mb-3" style="color: #ff3366; font-size: 2.5rem;">
+                        <i class="bi bi-lock-fill"></i>
+                    </div>
+
+                    <h5 class="text-white font-weight-bold mb-2"
+                        style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; font-size: 1.5rem;">
+                        AKSES TERBATAS
+                    </h5>
+                    <p class="text-secondary small mb-4">
+                        Login terlebih dahulu untuk bisa menggunakan fitur ini.
+                    </p>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{{ route('login') }}" class="btn-nav w-100 py-2 text-center text-decoration-none"
+                            style="display: block;">
+                            LOGIN SEKARANG
+                        </a>
+                        <button type="button" class="btn btn-sm text-secondary w-100" data-bs-dismiss="modal"
+                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Nanti Saja
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
     <script>
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1138,12 +1110,76 @@
             });
         });
 
-        function toggleSave(btn) {
-            btn.classList.toggle('saved');
-            const icon = btn.querySelector('i');
-            icon.className = btn.classList.contains('saved') ? 'bi bi-heart-fill' : 'bi bi-heart';
-        }
-    </script>
-</body>
+        document.addEventListener('DOMContentLoaded', function() {
+            const saveBtn = document.getElementById('saveBtn');
 
-</html>
+            saveBtn.addEventListener('click', function() {
+                const vehicleId = this.getAttribute('data-id');
+                const icon = this.querySelector('i');
+
+                fetch(`/vehicle/${vehicleId}/wishlist`, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(response => {
+                        if (response.status === 401) {
+                            const loginModal = new bootstrap.Modal(document.getElementById(
+                                'loginAlertModal'));
+                            loginModal.show();
+                            return;
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (!data) return;
+
+                        if (data.status === 'added') {
+                            this.classList.add('saved');
+                            icon.classList.replace('bi-heart', 'bi-heart-fill');
+                        } else if (data.status === 'removed') {
+                            this.classList.remove('saved');
+                            icon.classList.replace('bi-heart-fill', 'bi-heart');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+            const shareBtn = document.getElementById('shareBtn');
+
+            shareBtn.addEventListener('click', function() {
+                const title = this.getAttribute('data-title');
+                const url = this.getAttribute('data-url');
+
+                if (navigator.share) {
+                    navigator.share({
+                            title: title,
+                            text: 'Cek kendaraan keren ini di CAPSTONE Rental!',
+                            url: url
+                        })
+                        .then(() => console.log('Berhasil membagikan!'))
+                        .catch((error) => console.log('Gagal membagikan:', error));
+                } else {
+                    navigator.clipboard.writeText(url);
+                    alert('Link berhasil disalin ke clipboard! Siap dibagikan.');
+                }
+            });
+
+            const bookingForm = document.getElementById('bookingForm');
+            const bookingBtn = document.getElementById('bookingBtn');
+
+            bookingForm.addEventListener('submit', function(e) {
+                const isAuthorized = bookingBtn.getAttribute('data-auth') === 'true';
+
+                if (!isAuthorized) {
+                    e.preventDefault();
+                    const loginModal = new bootstrap.Modal(document.getElementById('loginAlertModal'));
+                    loginModal.show();
+                }
+            });
+        });
+    </script>
+@endpush
