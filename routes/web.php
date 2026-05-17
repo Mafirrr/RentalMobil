@@ -51,4 +51,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
     Route::post('/pembayaran/tripay-api', [PaymentController::class, 'generateTripayPayment']);
     Route::post('/rentals/store', [PaymentController::class, 'store']);
+    Route::get('/wishlist', [LandingController::class, 'wishlist'])->name('wishlist');
+    Route::get('/pesanan', [LandingController::class, 'riwayat'])->name('riwayat');
 });

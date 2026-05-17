@@ -17,6 +17,7 @@ class Rental extends Model
      */
     protected $fillable = [
         'user_id',
+        'merchant_ref',
         'NIK',
         'vehicle_id',
         'rental_date',

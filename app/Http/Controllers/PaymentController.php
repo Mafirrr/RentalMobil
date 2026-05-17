@@ -29,6 +29,13 @@ class PaymentController extends Controller
         $privateKey = env('TRIPAY_PRIVATE_KEY');
         $merchantCode = env('TRIPAY_MERCHANT_CODE');
 
+        if (!$request->total || $request->total <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Total pembayaran tidak valid atau bernilai 0.'
+            ], 400);
+        }
+
         if ($request->has('cancel_reference') && !empty($request->cancel_reference)) {
             try {
                 $cancelUrl = 'https://tripay.co.id/api-sandbox/merchant/transactions/void';
@@ -46,9 +53,10 @@ class PaymentController extends Controller
         }
 
         $baseUrl = 'https://tripay.co.id/api-sandbox/transaction/create';
-        $merchantRef = 'INV-' . time();
+        $merchantRef = 'CAP-' . time() . '-' . rand(1000, 9999);
         $amount = ($request->total * 10) / 100;
         $amount = $amount < 20000 ? 20000 : $amount;
+        $amount = (int) ceil($amount);
 
         $signature = hash_hmac('sha256', $merchantCode . $merchantRef . $amount, $privateKey);
 
@@ -79,7 +87,8 @@ class PaymentController extends Controller
             $result = $response->json();
             return response()->json([
                 'success' => true,
-                'data' => $result['data']
+                'data' => $result['data'],
+                'merchant_ref' => $merchantRef
             ]);
         }
 
@@ -93,18 +102,19 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nik'         => 'required|digits:16',
-            'vehicle_id'  => 'required|exists:vehicles,id',
-            'pickup'      => 'required|string',
-            'deliver'     => 'required|string',
+            'nik' => 'required|digits:16',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'pickup' => 'required|string',
+            'deliver' => 'required|string',
             'rental_date' => 'required|date',
             'return_date' => 'required|date|after_or_equal:rental_date',
-            'jam'         => 'required',
-            'days'        => 'required|integer|min:1',
-            'total'       => 'required|numeric',
-            'no_va'       => 'required', // Dihapus tipe integer karena beberapa VA bank/e-wallet bisa sangat panjang atau bertipe string
-            'reference'   => 'required|string',
-            'method'      => 'required|string',
+            'jam' => 'required',
+            'days' => 'required|integer|min:1',
+            'total' => 'required|numeric',
+            'no_va' => 'required',
+            'reference' => 'required|string',
+            'method' => 'required|string',
+            'merchant_ref' => 'required|string',
         ]);
 
         DB::beginTransaction();
@@ -115,38 +125,37 @@ class PaymentController extends Controller
 
             $amount = $amount < 20000 ? 20000 : $amount;
 
-            $randomId = rand(10000, 90000);
-            $merchantRef = "CAP-2026-" . $randomId;
+            $merchantRef = $request->merchant_ref;
 
             $rental = Rental::create([
-                'user_id'               => Auth::id(),
-                'NIK'                   => $request->nik,
-                'vehicle_id'            => $request->vehicle_id,
-                'rental_date'           => $rentalDateTime,
+                'user_id' => Auth::id(),
+                'merchant_ref' => $merchantRef,
+                'NIK' => $request->nik,
+                'vehicle_id' => $request->vehicle_id,
+                'rental_date' => $rentalDateTime,
                 'return_date_scheduled' => $returnDateTime,
-                'duration'              => $request->days,
-                'pickup_location'       => $request->pickup,
-                'deliver_to_location'   => $request->deliver,
-                'total_price'           => $request->total,
-                'amount_paid'           => $amount,
-                'status'                => 'pending',
+                'duration' => $request->days,
+                'pickup_location' => $request->pickup,
+                'deliver_to_location' => $request->deliver,
+                'total_price' => $request->total,
+                'amount_paid' => $amount,
+                'status' => 'pending',
             ]);
 
             $feeAmount = 4500;
 
             Payment::create([
-                'reference'      => $request->reference,
-                'merchant_ref'   => $merchantRef,
-                'no_va'          => $request->no_va,
-                'rental_id'      => $rental->id,
-                'total_bill'     => $request->total,
-                'amount'         => $amount + $feeAmount,
-                'fee_amount'     => $feeAmount,
-                'net_amount'     => $amount,
+                'reference' => $request->reference,
+                'no_va' => $request->no_va,
+                'rental_id' => $rental->id,
+                'total_bill' => $request->total,
+                'amount' => $amount + $feeAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amount,
                 'payment_method' => $request->method,
-                'payment_type'   => 'dp',
-                'payment_name'   => $request->method,
-                'status'         => 'unpaid',
+                'payment_type' => 'dp',
+                'payment_name' => $request->method,
+                'status' => 'unpaid',
             ]);
 
             DB::commit();

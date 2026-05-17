@@ -16,7 +16,6 @@ class Payment extends Model
      */
     protected $fillable = [
         'reference',
-        'merchant_ref',
         'no_va',
         'rental_id',
         'total_bill',

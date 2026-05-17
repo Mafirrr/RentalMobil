@@ -27,7 +27,7 @@ class TripayCallbackController extends Controller
             ], 403);
         }
 
-        if ('payment_status_changed' !== $request->header('X-Callback-Event')) {
+        if ('payment_status' !== $request->header('X-Callback-Event')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unrecognized Event'

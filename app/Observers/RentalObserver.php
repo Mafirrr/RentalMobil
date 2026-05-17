@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Car;
 use App\Models\Rental;
+use Carbon\Carbon;
 
 class RentalObserver
 {
@@ -12,10 +12,7 @@ class RentalObserver
      */
     public function created(Rental $rental): void
     {
-        $car = Car::find($rental->car_id);
-        if ($car) {
-            $car->update(['status' => 'rented']);
-        }
+        // isi
     }
 
     /**
@@ -23,13 +20,19 @@ class RentalObserver
      */
     public function updated(Rental $rental): void
     {
-        if ($rental->isDirty('status')) {
-            $newStatus = $rental->status;
+        if ($rental->isDirty('status') && $rental->status === 'ongoing') {
 
-            if (in_array($newStatus, ['completed', 'cancelled'])) {
-                $car = Car::find($rental->car_id);
-                if ($car) {
-                    $car->update(['status' => 'available']);
+            $today = Carbon::today();
+            $rentalDate = Carbon::parse($rental->rental_date)->startOfDay();
+
+            if ($rentalDate->equalTo($today)) {
+
+                $vehicle = $rental->vehicle;
+
+                if ($vehicle) {
+                    $vehicle->update([
+                        'status' => 'rented'
+                    ]);
                 }
             }
         }

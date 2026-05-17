@@ -43,6 +43,11 @@ class Vehicle extends Model
         return $this->hasMany(Rental::class);
     }
 
+    public function wishlist(): HasMany
+    {
+        return $this->hasMany(Wishlist::class, 'vehicle_id');
+    }
+
     // Helper untuk mengambil detail siapapun tipenya
     public function getDetailsAttribute()
     {

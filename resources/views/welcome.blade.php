@@ -1085,8 +1085,8 @@
                                         Rp {{ number_format($car->daily_rate, 0, ',', '.') }}
                                         <span>per hari</span>
                                     </div>
-                                    <a href="#" class="btn-rent">
-                                        SEWA <i class="bi bi-arrow-right"></i>
+                                    <a href="{{ route('detail', $car->id) }}" class="btn-rent">
+                                        DETAIL <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </div>
                             </div>

@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->unique()->index();
-            $table->string('merchant_ref')->unique()->index();
             $table->string('no_va', 50)->nullable();
             $table->foreignId('rental_id')->constrained('rentals')->onDelete('cascade');
             $table->decimal('total_bill', 12, 2);

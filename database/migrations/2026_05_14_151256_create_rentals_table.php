@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('rentals', function (Blueprint $Schema) {
             $Schema->id();
+            $Schema->string('merchant_ref')->unique()->index();
             $Schema->foreignId('user_id')->constrained('users');
             $Schema->string('NIK')->nullable();
             $Schema->foreignId('vehicle_id')->constrained('vehicles');

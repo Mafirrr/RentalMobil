@@ -1484,6 +1484,7 @@
             threshold: 0.06
         });
         fadeEls.forEach(el => obs.observe(el));
+        window.currentMerchantRef = null;
 
         const pmItems = document.querySelectorAll('.pay-method-item');
         pmItems.forEach(item => {
@@ -1556,8 +1557,9 @@
             const totalBasePrice = BASE_RATE * totalDays;
             document.getElementById('pbBase').innerText = `${formatRupiah(totalBasePrice)} (${totalDays} hari)`;
 
-            const currentDeposit = Math.round((totalBasePrice * 10) / 100);
-            currentDeposit = currentDeposit < 20000 ? 20000 : currentDeposit;
+            const calculatedDeposit = Math.round((totalBasePrice * 10) / 100);
+            const currentDeposit = calculatedDeposit < 20000 ? 20000 : calculatedDeposit;
+
             const depositEl = document.getElementById('pbDeposit');
             if (depositEl) {
                 depositEl.innerText = formatRupiah(currentDeposit);
@@ -1763,6 +1765,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                     },
                     body: JSON.stringify(payloadData)
@@ -1790,6 +1793,7 @@
                         window.currentTripayReference = data.data.reference;
                         window.tripayReference = data.data.reference;
 
+                        window.currentMerchantRef = data.merchant_ref;
                         validateForm();
                     } else {
                         alert('Tripay Error: ' + data.message);
@@ -1798,6 +1802,7 @@
                 })
                 .catch(error => {
                     alert('Terjadi kesalahan jaringan atau data input form belum lengkap.');
+                    console.log(error)
                     resetButton(btnGenerate, methodUpper);
                 });
         }
@@ -1882,6 +1887,7 @@
                 no_va: no_va,
                 method: methodUse,
                 reference: window.currentTripayReference,
+                merchant_ref: window.currentMerchantRef,
             };
 
             console.log(payloadRental)

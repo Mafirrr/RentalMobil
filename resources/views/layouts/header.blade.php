@@ -10,7 +10,7 @@
             </div>
             <div class="d-none d-md-flex align-items-center gap-2">
                 @if (isset($detailPage) && $detailPage)
-                    <a href="{{ route('category') }}" class="nav-back">
+                    <a href="{{ url()->previous() }}" onclick="history.back();" class="nav-back">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                 @else
@@ -22,6 +22,14 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
                                 <li><a class="dropdown-item" href="#">Profil</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('wishlist') }}">Wishlist</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('riwayat') }}">Pesanan</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
