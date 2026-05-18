@@ -161,7 +161,7 @@ class LandingController extends Controller
         $search = $request->input('search');
 
         $query = Rental::where('user_id', $userId)
-            ->with(['vehicle.car', 'vehicle.motorcycle', 'vehicle.category']);
+            ->with(['vehicle.car', 'vehicle.motorcycle', 'vehicle.category', 'payment']);
 
         if ($status) {
             $query->where('status', $status);
@@ -185,6 +185,9 @@ class LandingController extends Controller
         }
 
         $bookings = $query->latest()->get();
+
+        // dd($bookings->payment);
+        // dd($bookings->payment->net_amount);
 
         return view('riwayat', compact('bookings'));
     }

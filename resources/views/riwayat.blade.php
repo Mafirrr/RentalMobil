@@ -560,6 +560,271 @@
                 justify-content: center;
             }
         }
+
+        .payment-summary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .payment-summary-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            background: rgba(255, 255, 255, 0.02);
+
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+
+            color: var(--text-primary);
+        }
+
+        .payment-summary-header i {
+            color: var(--accent);
+        }
+
+        .payment-summary-body {
+            padding: 16px;
+        }
+
+        .payment-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 12px;
+        }
+
+        .payment-label {
+            color: var(--text-secondary);
+            font-size: 0.82rem;
+        }
+
+        .payment-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .payment-row-highlight {
+            padding-top: 12px;
+            margin-top: 12px;
+
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
+        }
+
+        .payment-paid {
+            color: #00d26a;
+
+            font-size: 0.82rem;
+            font-weight: 600;
+
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .payment-progress-wrap {
+            margin-top: 18px;
+        }
+
+        .payment-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .payment-progress-bar {
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, var(--accent), #d8ff52);
+            transition: width 0.4s ease;
+        }
+
+        .btn-pay-remaining {
+            margin-top: 18px;
+
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            padding: 11px 16px;
+
+            border: 1px solid #ffc107;
+            color: #ffc107;
+
+            border-radius: 3px;
+
+            font-family: 'Space Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+
+            transition: all 0.25s ease;
+        }
+
+        .btn-pay-remaining:hover {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .payment-success-info {
+            margin-top: 18px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            padding: 12px;
+
+            border-radius: 3px;
+
+            background: rgba(0, 210, 106, 0.1);
+            border: 1px solid rgba(0, 210, 106, 0.2);
+
+            color: #00d26a;
+
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .payment-confirm-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .payment-confirm-subtitle {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .payment-confirm-title {
+            font-weight: 800;
+            color: #111;
+            margin-top: 2px;
+        }
+
+        .payment-status-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            border-radius: 14px;
+            background: rgba(0, 82, 156, 0.05);
+            border: 1px solid rgba(0, 82, 156, 0.12);
+        }
+
+        .payment-status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #00529c;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .payment-status-title {
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 4px;
+        }
+
+        .payment-status-desc {
+            font-size: 0.88rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .confirm-payment-card {
+            border: 1px solid #e9ecef;
+            border-radius: 14px;
+
+            padding: 18px;
+            background: #f8f9fa;
+        }
+
+        .confirm-payment-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 14px;
+
+            color: #495057;
+            font-size: 0.95rem;
+        }
+
+        .confirm-payment-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .confirm-payment-row.total {
+            padding-top: 14px;
+            border-top: 1px dashed #ced4da;
+
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .payment-note-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+
+            padding: 14px;
+
+            border-radius: 12px;
+
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+
+            color: #8d6e63;
+            font-size: 0.85rem;
+        }
+
+        .btn-confirm-payment {
+            padding: 13px 26px;
+            border-radius: 12px;
+            color: #ffc107;
+            border-color: #ffbf00;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-confirm-payment:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(0, 82, 156, 0.25);
+        }
+
+        .no-va {
+            color: #000;
+            font-weight: 400;
+        }
+
+        .col {
+            color: #495057;
+        }
     </style>
 @endpush
 @section('content')
@@ -619,106 +884,226 @@
                     <div class="result-info">Menampilkan <span id="visibleCount">{{ $bookings->count() }}</span> riwayat
                         pesanan</div>
                 </div>
-
                 <div class="row g-4">
                     @foreach ($bookings as $booking)
-                        @php
-                            $vehicle = $booking->vehicle;
-                            $isCar = $vehicle->car ? true : false;
-                        @endphp
-
-                        <div class="col-xl-4 col-lg-6 col-md-6 fade-up" style="transition-delay: 0.1s">
-                            <div class="car-card {{ !$isCar ? 'motor-card' : '' }} p-0">
-
-                                <div class="p-3 border-bottom d-flex align-items-center justify-content-between"
-                                    style="background: rgba(255,255,255,0.02)">
-                                    <div>
-                                        <span class="text-secondary small d-block">Nota / Kode Sewa</span>
-                                        <strong
-                                            style="font-family: monospace; color: var(--text-main);">#{{ $booking->merchant_ref }}</strong>
-                                    </div>
-
-                                    @if ($booking->status == 'pending')
-                                        <span class="badge bg-warning text-dark px-2 py-1 small"><i class="bi bi-clock"></i>
-                                            Menunggu Bayar</span>
-                                    @elseif($booking->status == 'ongoing')
-                                        <span class="badge bg-primary px-2 py-1 small"><i class="bi bi-arrow-repeat"></i>
-                                            Sedang Digunakan</span>
-                                    @elseif($booking->status == 'completed')
-                                        <span class="badge bg-success px-2 py-1 small"><i class="bi bi-check2-all"></i>
-                                            Selesai Sewa</span>
-                                    @else
-                                        <span class="badge bg-secondary px-2 py-1 small"><i class="bi bi-x-circle"></i>
-                                            Batal</span>
-                                    @endif
-                                </div>
-
-                                <div class="car-body p-3">
-                                    <div class="car-category">
-                                        {{ strtoupper($vehicle->category->name) }} · {{ $vehicle->color }}
-                                        <span class="float-end text-secondary">
-                                            @if ($isCar)
-                                                <i class="bi bi-car-front-fill"></i> Mobil
-                                            @else
-                                                <i class="bi bi-bicycle" style="color:#00d4ff"></i> Motor
-                                            @endif
-                                        </span>
-                                    </div>
-                                    <div class="car-name mb-3">{{ $vehicle->model }}</div>
-
-                                    <div class="p-2 mb-3 rounded"
-                                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05)">
-                                        <div class="row text-center">
-                                            <div class="col-5">
-                                                <small class="text-secondary d-block" style="font-size: 0.75rem;">TGL
-                                                    MULAI</small>
-                                                <span class="small font-weight-bold"
-                                                    style="color: var(--text-main);">{{ date('d M Y', strtotime($booking->rental_date)) }}</span>
-                                            </div>
-                                            <div class="col-2 d-flex align-items-center justify-content-center">
-                                                <i class="bi bi-arrow-right text-secondary"></i>
-                                            </div>
-                                            <div class="col-5">
-                                                <small class="text-secondary d-block" style="font-size: 0.75rem;">TGL
-                                                    SELESAI</small>
-                                                <span class="small font-weight-bold"
-                                                    style="color: var(--text-main);">{{ date('d M Y', strtotime($booking->return_date_scheduled)) }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="car-specs mb-3">
-                                        @if ($isCar)
-                                            <div class="spec-item"><i class="bi bi-people-fill"></i>
-                                                {{ $vehicle->car->capacity ?? '-' }} Kursi</div>
-                                            <div class="spec-item"><i class="bi bi-gear-fill"></i>
-                                                {{ $vehicle->car->transmission ?? '-' }}</div>
-                                        @else
-                                            <div class="spec-item"><i class="bi bi-speedometer2" style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->engine_capacity ?? '-' }}cc</div>
-                                            <div class="spec-item"><i class="bi bi-gear-fill" style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->transmission ?? '-' }}</div>
-                                        @endif
-                                    </div>
-
-                                    <div class="car-footer pt-2 border-top">
-                                        <div class="car-price">
-                                            <span class="price-amount" style="font-size: 1.2rem;">
-                                                Rp {{ number_format($booking->total_price, 0, ',', '.') }}
-                                            </span>
-                                            <span class="price-label">Total ({{ $booking->duration }} Hari)</span>
-                                        </div>
-
-                                        {{-- <a href="#" class="btn-rent text-decoration-none">
-                                            INVOICE <i class="bi bi-arrow-right"></i>
-                                        </a> --}}
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
+                        <x-booking-card :booking="$booking" />
                     @endforeach
                 </div>
+                @foreach ($bookings as $booking)
+                    @php
+                        $total = $booking->total_price ?? 0;
+                        $paid = $booking->payment ? $booking->payment->sum('amount') : 0;
+                        if ($paid == 0 && $total > 0) {
+                            $paid = ($total * 10) / 100;
+                        }
+                        $remaining = $total - $paid;
+                    @endphp
+
+                    @if ($remaining > 0)
+                        <div class="modal fade" id="paymentModal{{ $booking->id }}" tabindex="-1"
+                            aria-labelledby="paymentModalLabel{{ $booking->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content text-dark">
+
+                                    <div class="modal-header">
+                                        <div>
+                                            <small class="text-muted d-block text-start">Pelunasan Pembayaran</small>
+                                            <h5 class="modal-title fw-bold text-dark"
+                                                id="paymentModalLabel{{ $booking->id }}">
+                                                #{{ $booking->merchant_ref }}
+                                            </h5>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="modal-body text-start">
+                                        <div class="payment-modal-box mb-3">
+                                            <div class="payment-modal-row">
+                                                <span>Total Rental</span>
+                                                <strong>Rp {{ number_format($total, 0, ',', '.') }}</strong>
+                                            </div>
+                                            <div class="payment-modal-row">
+                                                <span>DP Dibayar</span>
+                                                <strong class="text-info">Rp
+                                                    {{ number_format($paid, 0, ',', '.') }}</strong>
+                                            </div>
+                                            <div class="payment-modal-row total">
+                                                <span>Sisa Pembayaran</span>
+                                                <strong class="text-danger">Rp
+                                                    {{ number_format($remaining, 0, ',', '.') }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="payment-alert mb-4">
+                                            <i class="bi bi-info-circle-fill"></i>
+                                            Silakan pilih salah satu metode di bawah untuk menyelesaikan pelunasan
+                                            transaksi rental Anda.
+                                        </div>
+
+                                        <div class="form-section">
+                                            <div class="mb-3">
+                                                <label class="fw-bold text-dark mb-1">Metode Pembayaran</label>
+                                                <div class="text-muted small">Pilih virtual account atau transfer manual
+                                                </div>
+                                            </div>
+
+                                            <div class="pay-methods">
+                                                <label class="pay-method-item">
+                                                    <input type="radio" name="paymethod_{{ $booking->id }}"
+                                                        value="briva" checked>
+                                                    <div class="pay-method-radio"></div>
+                                                    <div class="pay-method-icon"
+                                                        style="background:#00529c; color:#fff; font-weight:700; font-size:0.65rem;">
+                                                        BRI</div>
+                                                    <div class="pay-method-info">
+                                                        <div class="pay-method-name">BRIVA</div>
+                                                        <div class="pay-method-desc">Virtual Account BRI</div>
+                                                    </div>
+                                                </label>
+
+                                                <label class="pay-method-item">
+                                                    <input type="radio" name="paymethod_{{ $booking->id }}"
+                                                        value="bni">
+                                                    <div class="pay-method-radio"></div>
+                                                    <div class="pay-method-icon"
+                                                        style="background:#ff6600; color:#fff; font-weight:700; font-size:0.65rem;">
+                                                        BNI</div>
+                                                    <div class="pay-method-info">
+                                                        <div class="pay-method-name">BNI VA</div>
+                                                        <div class="pay-method-desc">Virtual Account BNI</div>
+                                                    </div>
+                                                </label>
+
+                                                <label class="pay-method-item">
+                                                    <input type="radio" name="paymethod_{{ $booking->id }}"
+                                                        value="mandiri">
+                                                    <div class="pay-method-radio"></div>
+                                                    <div class="pay-method-icon"
+                                                        style="background:#003882; color:#ffde00; font-weight:700; font-size:0.6rem;">
+                                                        MDR</div>
+                                                    <div class="pay-method-info">
+                                                        <div class="pay-method-name">Mandiri VA</div>
+                                                        <div class="pay-method-desc">Virtual Account Mandiri</div>
+                                                    </div>
+                                                </label>
+
+                                                <label class="pay-method-item">
+                                                    <input type="radio" name="paymethod_{{ $booking->id }}"
+                                                        value="transfer">
+                                                    <div class="pay-method-radio"></div>
+                                                    <div class="pay-method-icon bg-secondary text-white">
+                                                        <i class="bi bi-bank"></i>
+                                                    </div>
+                                                    <div class="pay-method-info">
+                                                        <div class="pay-method-name">Transfer Bank</div>
+                                                        <div class="pay-method-desc">Transfer Manual Antar Bank</div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-warning w-100 mt-3 py-2 fw-bold"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#paymentConfirmModal{{ $booking->id }}">
+                                                LANJUTKAN PEMBAYARAN <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    <div class="modal fade" id="paymentConfirmModal{{ $booking->id }}" tabindex="-1"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content payment-confirm-content dark-confirm-modal">
+                                <div class="modal-header border-0 pb-0">
+                                    <div>
+                                        <small class="payment-confirm-subtitle">
+                                            Konfirmasi Pembayaran
+                                        </small>
+                                        <h4 class="payment-confirm-title">
+                                            #{{ $booking->merchant_ref }}
+                                        </h4>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                    </button>
+                                </div>
+                                <div class="modal-body pt-2">
+                                    <div class="payment-status-box mb-4">
+                                        <div class="payment-status-icon">
+                                            <i class="bi bi-shield-check"></i>
+                                        </div>
+                                        <div>
+                                            <div class="payment-status-title">
+                                                Pembayaran Aman
+                                            </div>
+                                            <div class="payment-status-desc">
+                                                Pastikan nominal dan metode pembayaran sudah benar sebelum
+                                                melanjutkan transaksi.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="confirm-payment-card">
+                                        <div class="confirm-payment-row">
+                                            <span>Total Rental</span>
+                                            <strong>
+                                                Rp {{ number_format($total, 0, ',', '.') }}
+                                            </strong>
+                                        </div>
+                                        <div class="confirm-payment-row">
+                                            <span>DP Dibayar</span>
+                                            <strong class="text-info">
+                                                Rp {{ number_format($paid, 0, ',', '.') }}
+                                            </strong>
+                                        </div>
+                                        <div class="confirm-payment-row">
+                                            <span>Metode Pembayaran</span>
+                                            <strong class="text-primary">
+                                                Virtual Account
+                                            </strong>
+                                        </div>
+                                        <div class="row align-items-center">
+                                            <div class="col">
+                                                Virtual Account
+                                            </div>
+                                            <div class="col-auto">
+                                                <!-- Menggabungkan Nomor dan Icon dalam d-flex yang rapi -->
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="no-va">1234567890</span>
+                                                    <button type="button"
+                                                        class="btn btn-link p-0 text-decoration-none lh-1">
+                                                        <i class="bi bi-copy fs-6 text-secondary"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="confirm-payment-row total">
+                                            <span>Sisa Pembayaran</span>
+                                            <strong class="text-warning">
+                                                Rp {{ number_format($remaining, 0, ',', '.') }}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                    <div class="payment-note-box mt-4">
+                                        <i class="bi bi-info-circle"></i>
+                                        Setelah pembayaran berhasil, status transaksi akan otomatis diperbarui pada
+                                        sistem.
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                                        Kembali
+                                    </button>
+                                    <button class="btn-confirm-payment">
+                                        BAYAR SEKARANG
+                                        <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             @else
                 <div class="empty-state" id="emptyState">
                     <i class="bi bi-clock-history d-block mb-3"

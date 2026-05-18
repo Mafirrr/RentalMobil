@@ -66,11 +66,11 @@
                 datasets: [{
                     label: 'Sewa Aktif',
                     data: [25, 30, 45, 38, 52, 85, 40, 50, 62, 30, 75, 68, 55],
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderColor: '#facc15',
+                    backgroundColor: 'rgba(250, 204, 21, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    pointBackgroundColor: '#0d6efd',
+                    pointBackgroundColor: '#facc15',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
                 }]

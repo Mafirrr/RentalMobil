@@ -1,158 +1,401 @@
 @extends('layouts.admin')
 
+@push('styles')
+    <style>
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border) !important;
+            border-radius: 6px;
+            backdrop-filter: blur(20px);
+            transition: all .3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at top right,
+                    rgba(200, 255, 0, 0.06),
+                    transparent 35%);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-accent) !important;
+            background: var(--bg-card-hover);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .premium-search {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: .25s;
+            min-height: 56px;
+        }
+
+        .premium-search:focus-within {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 25px rgba(200, 255, 0, 0.08);
+        }
+
+        .premium-input {
+            background: transparent !important;
+            border: none !important;
+            color: var(--text-primary) !important;
+            box-shadow: none !important;
+            padding-left: 0;
+            font-size: .95rem;
+        }
+
+        .premium-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        .filter-btn {
+            border-radius: 2px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            transition: .2s;
+            padding: 10px 20px;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--border-accent);
+            color: var(--accent);
+        }
+
+        .vehicle-badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 6px 10px;
+            border-radius: 2px;
+            font-size: .72rem;
+        }
+
+        .vehicle-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-available {
+            background: #c8ff00;
+            box-shadow: 0 0 10px rgba(200, 255, 0, .5);
+        }
+
+        .status-rented {
+            background: #ff5858;
+        }
+
+        .status-maintenance {
+            background: #ffc107;
+        }
+
+        .premium-btn {
+            border-radius: 2px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            transition: .2s;
+        }
+
+        .premium-btn:hover {
+            border-color: var(--border-accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .premium-btn-primary {
+            background: var(--accent);
+            border: none;
+            color: #000;
+            font-weight: 700;
+        }
+
+        .premium-btn-primary:hover {
+            background: #d7ff42;
+            color: #000;
+        }
+
+        .premium-add-card {
+            border: 1px dashed var(--border-accent) !important;
+            background: rgba(200, 255, 0, 0.02);
+            transition: .3s;
+            border-radius: 6px;
+        }
+
+        .premium-add-card:hover {
+            background: rgba(200, 255, 0, 0.05);
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(200, 255, 0, 0.08);
+        }
+
+        .modal-content {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 4px;
+        }
+
+        .pagination .page-link {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .pagination .active .page-link {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+    </style>
+@endpush
+
 @section('admin_content')
     <div class="container-fluid">
-        <div class="mb-4">
-            <h2 class="fw-bold text-white">Daftar Armada</h2>
-            <p class="text-secondary">Kelola armada, harga sewa, dan status ketersediaan mobil Anda.</p>
-        </div>
-
-        <div class="card bg-secondary bg-opacity-10 border-0 shadow-sm mb-5" style="border-radius: 20px;">
-            <div class="card-body p-3">
+        {{-- SEARCH --}}
+        <div class="glass-card mb-5">
+            <div class="card-body p-4">
                 <div class="row align-items-center g-3">
+
                     <div class="col-lg-8">
                         <form action="{{ route('admin.vehicles') }}" method="GET">
-                            <div
-                                class="input-group bg-dark rounded-pill px-3 py-1 border border-secondary border-opacity-25">
-                                <span class="input-group-text bg-transparent border-0"><i
-                                        class="bi bi-search text-secondary"></i></span>
-                                <input type="text" name="search" class="form-control bg-transparent border-0 text-white"
-                                    placeholder="Cari model mobil atau nomor plat..." value="{{ request('search') }}">
+                            <div class="premium-search d-flex align-items-center px-3">
+
+                                <i class="bi bi-search me-3 search-icon"></i>
+
+                                <input type="text" name="search" class="form-control premium-input"
+                                    placeholder="Cari model kendaraan atau nomor plat..." value="{{ request('search') }}">
+
                             </div>
                         </form>
                     </div>
-                    <div class="col-lg-4 d-flex justify-content-lg-end gap-2">
+
+                    <div class="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
+
                         <a href="{{ route('admin.vehicles') }}"
-                            class="btn btn-primary rounded-pill px-4 {{ request('status') ? 'active' : '' }}">Semua</a>
+                            class="btn filter-btn {{ request('status') ? '' : 'active' }}">
+                            Semua
+                        </a>
+
                         <a href="{{ route('admin.vehicles', ['status' => 'available']) }}"
-                            class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'available' ? 'bg-primary' : '' }}">Tersedia</a>
+                            class="btn filter-btn {{ request('status') == 'available' ? 'active' : '' }}">
+                            Tersedia
+                        </a>
+
                         <a href="{{ route('admin.vehicles', ['status' => 'rented']) }}"
-                            class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'rented' ? 'bg-primary' : '' }}">Disewa</a>
+                            class="btn filter-btn {{ request('status') == 'rented' ? 'active' : '' }}">
+                            Disewa
+                        </a>
+
                         <a href="{{ route('admin.vehicles', ['status' => 'maintenance']) }}"
-                            class="btn btn-outline-secondary border-0 rounded-pill px-4 text-white {{ request('status') == 'maintenance' ? 'bg-primary' : '' }}">Perbaikan</a>
+                            class="btn filter-btn {{ request('status') == 'maintenance' ? 'active' : '' }}">
+                            Perbaikan
+                        </a>
+
                     </div>
                 </div>
             </div>
         </div>
-        <div class="d-flex gap-2 mb-4">
+
+        {{-- FILTER TYPE --}}
+        <div class="d-flex gap-2 mb-5 flex-wrap">
+
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => ''])) }}"
-                class="btn {{ request('type') == '' ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-4">
+                class="btn filter-btn {{ request('type') == '' ? 'active' : '' }}">
                 Semua
             </a>
+
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'car'])) }}"
-                class="btn {{ request('type') == 'car' ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-4">
+                class="btn filter-btn {{ request('type') == 'car' ? 'active' : '' }}">
                 <i class="bi bi-car-front me-2"></i>Mobil
             </a>
+
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'motorcycle'])) }}"
-                class="btn {{ request('type') == 'motorcycle' ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-4">
+                class="btn filter-btn {{ request('type') == 'motorcycle' ? 'active' : '' }}">
                 <i class="bi bi-bicycle me-2"></i>Motor
             </a>
+
         </div>
+
         <div class="row g-4">
+
+            {{-- ADD VEHICLE --}}
             <div class="col-xl-3 col-md-6">
                 <a href="{{ route('admin.vehicles.create') }}" class="text-decoration-none h-100">
-                    <div class="card h-100 bg-transparent border-secondary border-opacity-25 d-flex align-items-center justify-content-center py-5"
-                        style="border-style: dashed !important; border-width: 2px !important; border-radius: 24px;">
+
+                    <div class="card h-100 premium-add-card d-flex align-items-center justify-content-center py-5">
+
                         <div class="text-center text-secondary">
                             <i class="bi bi-plus-lg display-4 mb-3 d-block text-white"></i>
                             <h5 class="fw-bold text-white">Tambah Kendaraan</h5>
                         </div>
+
                     </div>
                 </a>
             </div>
 
+            {{-- VEHICLES --}}
             @foreach ($vehicles as $vehicle)
                 <div class="col-xl-3 col-md-6">
-                    <div class="card h-100 bg-secondary bg-opacity-10 border-0 shadow-sm"
-                        style="border-radius: 24px; border: 1px solid rgba(255,255,255,0.05) !important;">
+
+                    <div class="card glass-card h-100">
+
                         <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
+
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+
                                 <div>
-                                    <h4 class="fw-bold mb-0 text-white">{{ $vehicle->model }}</h4>
-                                    <p class="text-secondary small mb-0">{{ $vehicle->plate_number }}</p>
+                                    <h4 class="fw-bold mb-0 text-white">
+                                        {{ $vehicle->model }}
+                                    </h4>
+
+                                    <p class="text-secondary small mb-0">
+                                        {{ $vehicle->plate_number }}
+                                    </p>
                                 </div>
-                                <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal"
+
+                                <button type="button" class="btn premium-btn btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#detailModal{{ $vehicle->id }}">
                                     <i class="bi bi-info-circle"></i>
                                 </button>
+
                             </div>
 
-                            <div class="d-flex gap-2 mb-4">
+                            {{-- BADGES --}}
+                            <div class="d-flex gap-2 flex-wrap mb-4">
+
                                 @php
                                     $trans =
                                         $vehicle->car->transmission ?? ($vehicle->motorcycle->transmission ?? 'N/A');
-                                    $badgeColor = in_array($trans, ['Automatic', 'Matic'])
-                                        ? 'text-info border-info'
-                                        : 'text-secondary border-light';
                                 @endphp
 
-                                <span
-                                    class="badge bg-dark {{ $badgeColor }} border border-opacity-25 fw-normal px-2 py-1">
+                                <span class="vehicle-badge">
                                     {{ $trans }}
                                 </span>
-                                <span
-                                    class="badge bg-dark text-secondary border border-light border-opacity-25 fw-normal">{{ $vehicle->year }}</span>
-                                <span
-                                    class="badge bg-dark text-secondary border border-secondary border-opacity-25 fw-normal">Rp
-                                    {{ number_format($vehicle->daily_rate, 0, ',', '.') }}</span>
+
+                                <span class="vehicle-badge">
+                                    {{ $vehicle->year }}
+                                </span>
+
+                                <span class="vehicle-badge">
+                                    Rp {{ number_format($vehicle->daily_rate, 0, ',', '.') }}
+                                </span>
+
                             </div>
 
+                            {{-- FOOTER --}}
                             <div class="d-flex justify-content-between align-items-center mt-auto">
+
                                 <div class="d-flex align-items-center">
-                                    <div class="rounded-circle me-2"
-                                        style="width: 12px; height: 12px; background-color: {{ $vehicle->status == 'available' ? '#2ecc71' : '#e74c3c' }};">
+
+                                    <div
+                                        class="vehicle-status me-2
+                                        {{ $vehicle->status == 'available'
+                                            ? 'status-available'
+                                            : ($vehicle->status == 'rented'
+                                                ? 'status-rented'
+                                                : 'status-maintenance') }}">
                                     </div>
-                                    <span
-                                        class="small text-secondary">{{ $vehicle->status == 'available' ? 'Tersedia' : ($vehicle->status == 'rented' ? 'Disewa' : 'Perbaikan') }}</span>
+
+                                    <span class="small text-secondary">
+
+                                        {{ $vehicle->status == 'available' ? 'Tersedia' : ($vehicle->status == 'rented' ? 'Disewa' : 'Perbaikan') }}
+
+                                    </span>
                                 </div>
 
+                                {{-- ACTIONS --}}
                                 <div class="d-flex gap-2">
+
                                     <form action="{{ route('admin.vehicles.maintenance', $vehicle->id) }}" method="POST"
                                         class="d-inline">
+
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit"
-                                            class="btn btn-sm rounded-3 px-2 {{ $vehicle->status == 'maintenance' ? 'btn-warning' : 'btn-outline-warning' }}"
-                                            title="{{ $vehicle->status == 'maintenance' ? 'Set Available' : 'Set Maintenance' }}"
+
+                                        <button type="submit" class="btn premium-btn btn-sm"
                                             {{ $vehicle->status == 'rented' ? 'disabled' : '' }}>
+
                                             <i
-                                                class="bi {{ $vehicle->status == 'maintenance' ? 'bi-tools' : 'bi-gear' }}"></i>
+                                                class="bi
+                                                {{ $vehicle->status == 'maintenance' ? 'bi-tools' : 'bi-gear' }}">
+                                            </i>
+
                                         </button>
+
                                     </form>
+
                                     <a href="{{ route('admin.vehicles.edit', $vehicle->id) }}"
-                                        class="btn btn-primary btn-sm rounded-3 px-2">
+                                        class="btn premium-btn premium-btn-primary btn-sm">
+
                                         <i class="bi bi-pencil"></i>
+
                                     </a>
+
                                     <form action="{{ route('admin.vehicles.destroy', $vehicle->id) }}" method="POST"
                                         class="d-inline"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus armada ini?')">
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus kendaraan ini?')">
+
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm rounded-3 px-2">
+
+                                        <button type="submit" class="btn premium-btn btn-sm">
+
                                             <i class="bi bi-trash"></i>
+
                                         </button>
+
                                     </form>
+
                                 </div>
+
                             </div>
+
                         </div>
                     </div>
                 </div>
 
-
+                {{-- MODAL --}}
                 <div class="modal fade" id="detailModal{{ $vehicle->id }}" tabindex="-1" aria-hidden="true">
+
                     <div class="modal-dialog modal-xl modal-dialog-centered">
-                        <div class="modal-content bg-dark border-0">
+
+                        <div class="modal-content">
                             <div class="modal-body p-0">
                                 @include('admin.cars.show')
                             </div>
                         </div>
+
                     </div>
                 </div>
             @endforeach
+
         </div>
 
-        <div class="d-flex justify-content-center mt-4">
+        {{-- PAGINATION --}}
+        <div class="d-flex justify-content-center mt-5">
             {{ $vehicles->links('pagination::bootstrap-5') }}
         </div>
+
     </div>
 @endsection

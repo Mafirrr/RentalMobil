@@ -1171,7 +1171,6 @@
                     </div>
 
                     {{-- Section 3: Metode Pembayaran --}}
-                    {{-- Section 3: Metode Pembayaran --}}
                     <div class="form-section fade-up" style="transition-delay:0.2s">
                         <div class="form-section-head">
                             <div class="form-section-num">3</div>

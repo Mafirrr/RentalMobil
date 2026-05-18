@@ -953,29 +953,56 @@
     <section id="booking" style="background: var(--bg-surface); padding: 48px 0; border-top: 1px solid var(--border);">
         <div class="container">
             <div class="booking-bar">
-                <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-6">
+                <div class="row g-3 align-items-end flex-nowrap overflow-auto">
+                    <div class="col">
                         <div class="booking-label">Lokasi Jemput</div>
                         <select class="booking-input">
-                            <option>Jakarta Pusat</option>
-                            <option>Jakarta Selatan</option>
-                            <option>Jakarta Barat</option>
-                            <option>Bandara Soekarno-Hatta</option>
+                            <option>Sidoarjo Kota</option>
+                            <option>Candi</option>
+                            <option>Buduran</option>
+                            <option>Waru</option>
+                            <option>Taman</option>
+                            <option>Krian</option>
+                            <option>Porong</option>
+                            <option>Gedangan</option>
+                            <option>Sedati</option>
+                            <option>Balongbendo</option>
                         </select>
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col">
                         <div class="booking-label">Tanggal Mulai</div>
                         <input type="date" class="booking-input" />
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col">
                         <div class="booking-label">Tanggal Selesai</div>
                         <input type="date" class="booking-input" />
                     </div>
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col">
+                        <div class="booking-label">Range Harga</div>
+                        <select class="booking-input">
+                            <option>Semua Harga</option>
+                            <option>Rp 100rb - Rp 300rb</option>
+                            <option>Rp 300rb - Rp 500rb</option>
+                            <option>Rp 500rb - Rp 1jt</option>
+                            <option>Rp 1jt - Rp 2jt</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <div class="booking-label">Kapasitas</div>
+                        <select class="booking-input">
+                            <option>2 Orang</option>
+                            <option>4 Orang</option>
+                            <option>6 Orang</option>
+                            <option>7 Orang</option>
+                            <option>12 Orang</option>
+                        </select>
+                    </div>
+                    <div class="col">
                         <button class="btn-search-capstone w-100 justify-content-center">
                             <i class="bi bi-search"></i> CARI KENDARAAN
                         </button>
                     </div>
+
                 </div>
             </div>
         </div>
