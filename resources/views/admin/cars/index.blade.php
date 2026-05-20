@@ -156,243 +156,202 @@
             border-radius: 4px;
         }
 
-        .pagination .page-link {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
+        .pagination {
+            background-color: #0f172a;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-flex;
         }
 
-        .pagination .active .page-link {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #000;
+        .pagination .page-item .page-link {
+            background-color: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            margin: 0 4px;
+            padding: 8px 16px;
+            border-radius: 6px !important;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: rgba(200, 255, 0, 0.9) !important;
+            border-color: rgba(200, 255, 0, 1) !important;
+            color: #0f172a !important;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(200, 255, 0, 0.6), 0 0 4px rgba(200, 255, 0, 0.4);
+        }
+
+        .pagination .page-item .page-link:hover {
+            background-color: #334155;
+            color: rgba(200, 255, 0, 1);
+            border-color: rgba(200, 255, 0, 0.5);
+        }
+
+        .pagination .page-link:focus {
+            box-shadow: 0 0 0 3px rgba(200, 255, 0, 0.2);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            background-color: #0f172a;
+            color: #475569;
+            border-color: #1e293b;
+            opacity: 0.6;
         }
     </style>
 @endpush
 
 @section('admin_content')
     <div class="container-fluid">
-        {{-- SEARCH --}}
         <div class="glass-card mb-5">
             <div class="card-body p-4">
                 <div class="row align-items-center g-3">
-
                     <div class="col-lg-8">
                         <form action="{{ route('admin.vehicles') }}" method="GET">
                             <div class="premium-search d-flex align-items-center px-3">
-
                                 <i class="bi bi-search me-3 search-icon"></i>
-
                                 <input type="text" name="search" class="form-control premium-input"
                                     placeholder="Cari model kendaraan atau nomor plat..." value="{{ request('search') }}">
-
                             </div>
                         </form>
                     </div>
-
                     <div class="col-lg-4 d-flex justify-content-lg-end gap-2 flex-wrap">
-
                         <a href="{{ route('admin.vehicles') }}"
                             class="btn filter-btn {{ request('status') ? '' : 'active' }}">
                             Semua
                         </a>
-
                         <a href="{{ route('admin.vehicles', ['status' => 'available']) }}"
                             class="btn filter-btn {{ request('status') == 'available' ? 'active' : '' }}">
                             Tersedia
                         </a>
-
                         <a href="{{ route('admin.vehicles', ['status' => 'rented']) }}"
                             class="btn filter-btn {{ request('status') == 'rented' ? 'active' : '' }}">
                             Disewa
                         </a>
-
                         <a href="{{ route('admin.vehicles', ['status' => 'maintenance']) }}"
                             class="btn filter-btn {{ request('status') == 'maintenance' ? 'active' : '' }}">
                             Perbaikan
                         </a>
-
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- FILTER TYPE --}}
         <div class="d-flex gap-2 mb-5 flex-wrap">
-
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => ''])) }}"
                 class="btn filter-btn {{ request('type') == '' ? 'active' : '' }}">
                 Semua
             </a>
-
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'car'])) }}"
                 class="btn filter-btn {{ request('type') == 'car' ? 'active' : '' }}">
                 <i class="bi bi-car-front me-2"></i>Mobil
             </a>
-
             <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'motorcycle'])) }}"
                 class="btn filter-btn {{ request('type') == 'motorcycle' ? 'active' : '' }}">
                 <i class="bi bi-bicycle me-2"></i>Motor
             </a>
-
         </div>
 
         <div class="row g-4">
-
-            {{-- ADD VEHICLE --}}
             <div class="col-xl-3 col-md-6">
                 <a href="{{ route('admin.vehicles.create') }}" class="text-decoration-none h-100">
-
                     <div class="card h-100 premium-add-card d-flex align-items-center justify-content-center py-5">
-
                         <div class="text-center text-secondary">
                             <i class="bi bi-plus-lg display-4 mb-3 d-block text-white"></i>
                             <h5 class="fw-bold text-white">Tambah Kendaraan</h5>
                         </div>
-
                     </div>
                 </a>
             </div>
-
-            {{-- VEHICLES --}}
             @foreach ($vehicles as $vehicle)
                 <div class="col-xl-3 col-md-6">
-
                     <div class="card glass-card h-100">
-
                         <div class="card-body p-4 d-flex flex-column">
-
                             <div class="d-flex justify-content-between align-items-start mb-4">
-
                                 <div>
                                     <h4 class="fw-bold mb-0 text-white">
                                         {{ $vehicle->model }}
                                     </h4>
-
                                     <p class="text-secondary small mb-0">
                                         {{ $vehicle->plate_number }}
                                     </p>
                                 </div>
-
                                 <button type="button" class="btn premium-btn btn-sm" data-bs-toggle="modal"
                                     data-bs-target="#detailModal{{ $vehicle->id }}">
                                     <i class="bi bi-info-circle"></i>
                                 </button>
-
                             </div>
-
-                            {{-- BADGES --}}
                             <div class="d-flex gap-2 flex-wrap mb-4">
-
                                 @php
                                     $trans =
                                         $vehicle->car->transmission ?? ($vehicle->motorcycle->transmission ?? 'N/A');
                                 @endphp
-
                                 <span class="vehicle-badge">
                                     {{ $trans }}
                                 </span>
-
                                 <span class="vehicle-badge">
                                     {{ $vehicle->year }}
                                 </span>
-
                                 <span class="vehicle-badge">
                                     Rp {{ number_format($vehicle->daily_rate, 0, ',', '.') }}
                                 </span>
-
                             </div>
-
-                            {{-- FOOTER --}}
                             <div class="d-flex justify-content-between align-items-center mt-auto">
-
                                 <div class="d-flex align-items-center">
-
                                     <div
-                                        class="vehicle-status me-2
+                                        class="vehicle-status rounded-circle me-2
                                         {{ $vehicle->status == 'available'
                                             ? 'status-available'
                                             : ($vehicle->status == 'rented'
                                                 ? 'status-rented'
                                                 : 'status-maintenance') }}">
                                     </div>
-
                                     <span class="small text-secondary">
-
                                         {{ $vehicle->status == 'available' ? 'Tersedia' : ($vehicle->status == 'rented' ? 'Disewa' : 'Perbaikan') }}
-
                                     </span>
                                 </div>
-
-                                {{-- ACTIONS --}}
                                 <div class="d-flex gap-2">
-
                                     <form action="{{ route('admin.vehicles.maintenance', $vehicle->id) }}" method="POST"
                                         class="d-inline">
-
                                         @csrf
                                         @method('PUT')
-
                                         <button type="submit" class="btn premium-btn btn-sm"
                                             {{ $vehicle->status == 'rented' ? 'disabled' : '' }}>
-
                                             <i
                                                 class="bi
                                                 {{ $vehicle->status == 'maintenance' ? 'bi-tools' : 'bi-gear' }}">
                                             </i>
-
                                         </button>
-
                                     </form>
-
                                     <a href="{{ route('admin.vehicles.edit', $vehicle->id) }}"
                                         class="btn premium-btn premium-btn-primary btn-sm">
-
                                         <i class="bi bi-pencil"></i>
-
                                     </a>
-
                                     <form action="{{ route('admin.vehicles.destroy', $vehicle->id) }}" method="POST"
                                         class="d-inline"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus kendaraan ini?')">
-
                                         @csrf
                                         @method('DELETE')
-
                                         <button type="submit" class="btn premium-btn btn-sm">
-
                                             <i class="bi bi-trash"></i>
-
                                         </button>
-
                                     </form>
-
                                 </div>
-
                             </div>
-
                         </div>
                     </div>
                 </div>
-
-                {{-- MODAL --}}
                 <div class="modal fade" id="detailModal{{ $vehicle->id }}" tabindex="-1" aria-hidden="true">
-
                     <div class="modal-dialog modal-xl modal-dialog-centered">
-
                         <div class="modal-content">
                             <div class="modal-body p-0">
                                 @include('admin.cars.show')
                             </div>
                         </div>
-
                     </div>
                 </div>
             @endforeach
-
         </div>
 
-        {{-- PAGINATION --}}
         <div class="d-flex justify-content-center mt-5">
             {{ $vehicles->links('pagination::bootstrap-5') }}
         </div>

@@ -681,21 +681,29 @@
 
         .payment-success-info {
             margin-top: 18px;
-
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-
             padding: 12px;
-
             border-radius: 3px;
-
             background: rgba(0, 210, 106, 0.1);
             border: 1px solid rgba(0, 210, 106, 0.2);
-
             color: #00d26a;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
 
+        .payment-cancel-info {
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border-radius: 3px;
+            background: rgba(210, 35, 0, 0.1);
+            border: 1px solid rgba(210, 35, 0, 0.1);
             font-size: 0.8rem;
             font-weight: 600;
         }
@@ -828,6 +836,7 @@
     </style>
 @endpush
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <form action="{{ route('riwayat') }}" method="GET" id="filterForm">
         <div class="filter-bar">
             <div class="container">
@@ -892,11 +901,13 @@
                 @foreach ($bookings as $booking)
                     @php
                         $total = $booking->total_price ?? 0;
-                        $paid = $booking->payment ? $booking->payment->sum('amount') : 0;
-                        if ($paid == 0 && $total > 0) {
-                            $paid = ($total * 10) / 100;
+                        $remaining = $booking->remaining_amount;
+                        if ($remaining == 0 && $total > 0) {
+                            $paid = $total;
+                        } else {
+                            $paid = $total - $remaining;
                         }
-                        $remaining = $total - $paid;
+                        $percent = $total > 0 ? min(($paid / $total) * 100, 100) : 0;
                     @endphp
 
                     @if ($remaining > 0)
@@ -964,7 +975,7 @@
 
                                                 <label class="pay-method-item">
                                                     <input type="radio" name="paymethod_{{ $booking->id }}"
-                                                        value="bni">
+                                                        value="bniva">
                                                     <div class="pay-method-radio"></div>
                                                     <div class="pay-method-icon"
                                                         style="background:#ff6600; color:#fff; font-weight:700; font-size:0.65rem;">
@@ -977,7 +988,7 @@
 
                                                 <label class="pay-method-item">
                                                     <input type="radio" name="paymethod_{{ $booking->id }}"
-                                                        value="mandiri">
+                                                        value="mandiriva">
                                                     <div class="pay-method-radio"></div>
                                                     <div class="pay-method-icon"
                                                         style="background:#003882; color:#ffde00; font-weight:700; font-size:0.6rem;">
@@ -1001,9 +1012,11 @@
                                                     </div>
                                                 </label>
                                             </div>
-                                            <button type="button" class="btn btn-outline-warning w-100 mt-3 py-2 fw-bold"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#paymentConfirmModal{{ $booking->id }}">
+                                            <button type="button"
+                                                class="btn btn-outline-warning w-100 mt-3 py-2 fw-bold btn-lanjutkan-pembayaran"
+                                                data-booking-id="{{ $booking->id }}"
+                                                data-merchant-ref="{{ $booking->merchant_ref }}"
+                                                data-remaining="{{ $remaining }}">
                                                 LANJUTKAN PEMBAYARAN <i class="bi bi-arrow-right"></i>
                                             </button>
                                         </div>
@@ -1059,7 +1072,7 @@
                                         </div>
                                         <div class="confirm-payment-row">
                                             <span>Metode Pembayaran</span>
-                                            <strong class="text-primary">
+                                            <strong class="text-primary nama-metode-terpilih-{{ $booking->id }}">
                                                 Virtual Account
                                             </strong>
                                         </div>
@@ -1068,9 +1081,9 @@
                                                 Virtual Account
                                             </div>
                                             <div class="col-auto">
-                                                <!-- Menggabungkan Nomor dan Icon dalam d-flex yang rapi -->
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <span class="no-va">1234567890</span>
+                                                    <span
+                                                        class="no-va-{{ $booking->id }} text-black">Menghitung...</span>
                                                     <button type="button"
                                                         class="btn btn-link p-0 text-decoration-none lh-1">
                                                         <i class="bi bi-copy fs-6 text-secondary"></i>
@@ -1095,7 +1108,10 @@
                                     <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
                                         Kembali
                                     </button>
-                                    <button class="btn-confirm-payment">
+                                    <button class="btn-confirm-payment" id="payment-finish"
+                                        data-booking-id="{{ $booking->id }}"
+                                        data-merchant-ref="{{ $booking->merchant_ref }}"
+                                        data-remaining="{{ $remaining }}">
                                         BAYAR SEKARANG
                                         <i class="bi bi-arrow-right"></i>
                                     </button>
@@ -1130,3 +1146,182 @@
         });
     </script>
 @endsection
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let activeTriPayReferences = {};
+
+            const buttons = document.querySelectorAll('.btn-lanjutkan-pembayaran');
+            buttons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const merchant_ref = this.getAttribute('data-merchant-ref');
+                    const remaining = this.getAttribute('data-remaining');
+
+                    const selectedMethodInput = document.querySelector(
+                        `input[name="paymethod_${bookingId}"]:checked`);
+                    if (!selectedMethodInput) {
+                        alert('Silakan pilih metode pembayaran terlebih dahulu.');
+                        return;
+                    }
+                    const paymentMethod = selectedMethodInput.value;
+                    console.log(merchant_ref)
+                    const originalText = this.innerHTML;
+                    this.innerHTML =
+                        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...`;
+                    this.disabled = true;
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content');
+                        const response = await fetch('/pembayaran/tripay-api', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                booking_id: bookingId,
+                                merchant_ref: merchant_ref,
+                                method: paymentMethod,
+                                remaining: remaining,
+                            })
+                        });
+                        const result = await response.json();
+                        if (!response.ok || !result.success) {
+                            throw new Error(result.message ||
+                                'Gagal membuat tagihan pembayaran.');
+                        }
+
+                        if (result.data && result.data.reference) {
+                            activeTriPayReferences[bookingId] = result.data.reference;
+                        }
+
+                        const namaMetodePlaceholder = document.querySelector(
+                            `.nama-metode-terpilih-${bookingId}`);
+                        const nomorVaPlaceholder = document.querySelector(
+                            `.no-va-${bookingId}`);
+
+                        if (namaMetodePlaceholder) {
+                            namaMetodePlaceholder.textContent = paymentMethod.toUpperCase();
+                        }
+                        if (nomorVaPlaceholder) {
+                            nomorVaPlaceholder.textContent = result.data.account_number ||
+                                result.data.pay_code;
+                        }
+
+                        const modalPertamaEl = document.getElementById(
+                            `paymentModal${bookingId}`);
+                        const modalPertama = bootstrap.Modal.getInstance(modalPertamaEl);
+                        if (modalPertama) modalPertama.hide();
+
+                        const modalKeduaEl = document.getElementById(
+                            `paymentConfirmModal${bookingId}`);
+                        const modalKedua = new bootstrap.Modal(modalKeduaEl);
+                        modalKedua.show();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan: ' + error.message);
+                    } finally {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }
+                });
+            });
+
+            document.querySelectorAll('[class^="no-va-"]').forEach(el => {
+                const btnCopy = el.nextElementSibling;
+                if (btnCopy && btnCopy.querySelector('.bi-copy')) {
+                    btnCopy.addEventListener('click', function() {
+                        navigator.clipboard.writeText(el.textContent.trim());
+                        const icon = this.querySelector('i');
+                        icon.className = 'bi bi-check text-success fs-6';
+                        setTimeout(() => {
+                            icon.className = 'bi bi-copy text-secondary fs-6';
+                        }, 2000);
+                    });
+                }
+            });
+
+            const finishPaymentButtons = document.querySelectorAll('#payment-finish');
+            finishPaymentButtons.forEach(button => {
+                button.addEventListener('click', async function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    const merchant_ref = this.getAttribute('data-merchant-ref');
+                    const remaining = this.getAttribute('data-remaining');
+
+                    const nomorVaPlaceholder = document.querySelector(`.no-va-${bookingId}`);
+                    const namaMetodePlaceholder = document.querySelector(
+                        `.nama-metode-terpilih-${bookingId}`);
+
+                    if (!nomorVaPlaceholder || !nomorVaPlaceholder.textContent.trim() ||
+                        nomorVaPlaceholder.textContent.includes('...')) {
+                        alert('Nomor pembayaran belum siap atau gagal dimuat.');
+                        return;
+                    }
+
+                    const triPayReference = activeTriPayReferences[bookingId];
+                    if (!triPayReference) {
+                        alert(
+                            'Reference pembayaran tidak ditemukan. Silakan ulangi proses dari awal.'
+                        );
+                        return;
+                    }
+
+                    const noVa = nomorVaPlaceholder.textContent.trim();
+                    const paymentMethod = namaMetodePlaceholder ? namaMetodePlaceholder
+                        .textContent.trim().toLowerCase() : '';
+
+                    const originalText = this.innerHTML;
+                    this.innerHTML =
+                        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Menyimpan...`;
+                    this.disabled = true;
+
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content');
+
+                        const response = await fetch('/pelunasan', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                booking_id: bookingId,
+                                merchant_ref: merchant_ref,
+                                no_va: noVa,
+                                method: paymentMethod,
+                                total: remaining,
+                                reference: triPayReference,
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            throw new Error(result.message ||
+                                'Gagal menyimpan data pelunasan ke database.');
+                        }
+
+                        alert('Data pelunasan berhasil dicatat! Silakan lakukan pembayaran.');
+
+                        const modalKeduaEl = document.getElementById(
+                            `paymentConfirmModal${bookingId}`);
+                        const modalKedua = bootstrap.Modal.getInstance(modalKeduaEl);
+                        if (modalKedua) modalKedua.hide();
+
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error Pelunasan:', error);
+                        alert('Terjadi kesalahan: ' + error.message);
+                    } finally {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

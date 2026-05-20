@@ -1,10 +1,11 @@
 @php
     $total = $booking->total_price ?? 0;
-    $paid = $booking->payment ? $booking->payment->sum('amount') : 0;
-    if ($paid == 0 && $total > 0) {
-        $paid = ($total * 10) / 100;
+    $remaining = $booking->remaining_amount;
+    if ($remaining == 0 && $total > 0) {
+        $paid = $total;
+    } else {
+        $paid = $total - $remaining;
     }
-    $remaining = $total - $paid;
     $percent = $total > 0 ? min(($paid / $total) * 100, 100) : 0;
 @endphp
 
@@ -91,7 +92,6 @@
     }
 
     .payment-modal-box {
-        background: #16161c;
         border-radius: 12px;
         padding: 16px;
         border: 1px solid #dee2e6;
@@ -182,7 +182,11 @@
             </div>
         </div>
 
-        @if ($remaining > 0)
+        @if ($booking->status == 'cancelled')
+            <div class="payment-cancel-info mt-3 text-danger">
+                <i class="bi bi-patch-check-fill"></i> Pembayaran Telah Dibatalkan
+            </div>
+        @elseif ($remaining > 0)
             <button type="button" class="btn btn-outline-warning w-100 mt-3 py-2 fw-bold" data-bs-toggle="modal"
                 data-bs-target="#paymentModal{{ $booking->id }}">
                 BAYAR SISA <i class="bi bi-arrow-right"></i>

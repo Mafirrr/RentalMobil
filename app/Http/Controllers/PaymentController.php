@@ -25,27 +25,39 @@ class PaymentController extends Controller
 
     public function generateTripayPayment(Request $request)
     {
+        $user = User::with(['userDetail'])->findOrFail(Auth::id());
+
         $apiKey = env('TRIPAY_API_KEY');
         $privateKey = env('TRIPAY_PRIVATE_KEY');
         $merchantCode = env('TRIPAY_MERCHANT_CODE');
 
-        if (!$request->total || $request->total <= 0) {
+        $rental = null;
+        $totalHargaSewa = 0;
+
+        if ($request->filled('merchant_ref')) {
+            $rental = Rental::where('merchant_ref', $request->merchant_ref)->first();
+            if ($rental) {
+                $totalHargaSewa = $rental->total_price;
+            }
+        }
+
+        if (!$totalHargaSewa && $request->filled('total_price')) {
+            $totalHargaSewa = $request->total_price;
+        }
+
+        if (!$rental && !$request->filled('total_price')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Total pembayaran tidak valid atau bernilai 0.'
+                'message' => 'Data referensi pembayaran atau total harga tidak valid.'
             ], 400);
         }
 
         if ($request->has('cancel_reference') && !empty($request->cancel_reference)) {
             try {
                 $cancelUrl = 'https://tripay.co.id/api-sandbox/merchant/transactions/void';
-
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey
-                ])->post($cancelUrl, [
+                Http::withHeaders(['Authorization' => 'Bearer ' . $apiKey])->post($cancelUrl, [
                     'reference' => $request->cancel_reference
                 ]);
-
                 Log::info('Tripay Auto-Cancel Berhasil untuk Referensi: ' . $request->cancel_reference);
             } catch (\Exception $e) {
                 Log::error('Tripay Auto-Cancel Gagal: ' . $e->getMessage());
@@ -53,10 +65,20 @@ class PaymentController extends Controller
         }
 
         $baseUrl = 'https://tripay.co.id/api-sandbox/transaction/create';
-        $merchantRef = 'CAP-' . time() . '-' . rand(1000, 9999);
-        $amount = ($request->total * 10) / 100;
+        $merchantRef = $rental->merchant_ref ?? 'CAP-' . time() . '-' . rand(1000, 9999);
+
+        $custName = $user->username;
+        $custEmail = $user->email;
+        $custPhone = $user->userDetail->phone ?? '';
+        $duration = $rental->duration ?? 1;
+
+        $amount = ($totalHargaSewa * 10) / 100;
         $amount = $amount < 20000 ? 20000 : $amount;
         $amount = (int) ceil($amount);
+
+        if ($request->filled('remaining')) {
+            $amount = $request->remaining;
+        }
 
         $signature = hash_hmac('sha256', $merchantCode . $merchantRef . $amount, $privateKey);
 
@@ -64,13 +86,13 @@ class PaymentController extends Controller
             'method'         => $request->method,
             'merchant_ref'   => $merchantRef,
             'amount'         => $amount,
-            'customer_name'  => $request->name,
-            'customer_email' => $request->email,
-            'customer_phone' => $request->phone,
+            'customer_name'  => $request->name ?? $custName,
+            'customer_email' => $request->email ?? $custEmail,
+            'customer_phone' => $request->phone ?? $custPhone,
             'order_items'    => [
                 [
                     'sku'      => 'SEWA-KENDARAAN',
-                    'name'     => 'Sewa Mobil ' . $request->days . ' Hari',
+                    'name'     => 'Sewa Mobil ' . ($request->days ?? $duration) . ' Hari',
                     'price'    => $amount,
                     'quantity' => 1
                 ]
@@ -88,7 +110,7 @@ class PaymentController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => $result['data'],
-                'merchant_ref' => $merchantRef
+                'merchant_ref' => $merchantRef,
             ]);
         }
 
@@ -164,6 +186,54 @@ class PaymentController extends Controller
                 'success'      => true,
                 'message'      => 'Transaksi sewa berhasil disimpan.',
                 'merchant_ref' => $merchantRef
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan internal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function pelunasan(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:rentals,id',
+            'total' => 'required|numeric',
+            'no_va' => 'required',
+            'reference' => 'required|string',
+            'method' => 'required|string',
+            'merchant_ref' => 'required|string',
+        ]);
+
+        $rental = Rental::where('merchant_ref', $request->merchant_ref)->first();
+
+        DB::beginTransaction();
+        try {
+            $amount = $request->total;
+            $feeAmount = 4250;
+            $method = strtoupper($request->method);
+
+            Payment::create([
+                'reference' => $request->reference,
+                'no_va' => $request->no_va,
+                'rental_id' => $rental->id,
+                'total_bill' => $request->total,
+                'amount' => $amount + $feeAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amount,
+                'payment_method' => $method,
+                'payment_type' => 'repayment',
+                'payment_name' => $method,
+                'status' => 'unpaid',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success'      => true,
+                'message'      => 'Transaksi sewa berhasil disimpan.',
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -46,13 +47,23 @@ class AuthController extends Controller
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'fullName'  => 'required|string|max:255',
+            'phone'     => 'required|numeric',
+            'address'   => 'required|string',
         ]);
 
-        User::create([
+        $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'karyawan',
+            'role' => 'penyewa',
+        ]);
+
+        UserDetail::create([
+            'user_id' => $user->id,
+            'address' => $request->address,
+            'phone' => $request->phone,
+            'full_name' => $request->fullName,
         ]);
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');

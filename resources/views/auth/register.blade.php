@@ -1,63 +1,142 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Akun - Rental Mobil')
+@section('title', 'Register — CAPSTONE')
 
 @section('content')
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card bg-secondary bg-opacity-10 border-0 shadow-lg p-4"
-                    style="border: 1px solid rgba(255,255,255,0.1) !important;">
+    <div class="container d-flex align-items-center justify-content-center"
+        style="min-height: 100vh; padding-top: 120px; padding-bottom: 60px;">
+        <div class="row justify-content-center w-100">
+            <div class="col-md-7 col-lg-5">
+                <div class="card border-0 shadow-lg p-3"
+                    style="background: var(--bg-surface); border: 1px solid var(--border) !important; border-radius: 4px;">
+
                     <div class="card-body">
                         <div class="text-center mb-4">
-                            <h3 class="fw-bold text-white">Buat <span class="text-primary">Akun Baru</span></h3>
-                            <p class="text-secondary small">Bergabunglah dengan ribuan pengguna lainnya.</p>
+                            <h2 class="font-display text-white mb-2" style="font-size: 2.3rem; letter-spacing: 2px;">
+                                REGISTER <span style="color: var(--accent);">USER</span>
+                            </h2>
+                            <p class="font-mono text-white"
+                                style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">
+                                Buat akun untuk mulai menyewa armada premium
+                            </p>
                         </div>
+
+                        @if ($errors->any())
+                            <div class="alert alert-danger font-mono p-2 mb-4"
+                                style="font-size: 0.75rem; border-radius: 2px; background: rgba(220, 53, 69, 0.1); border-color: rgba(220, 53, 69, 0.2); color: #ea868f;">
+                                <ul class="mb-0 ps-3">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
 
                         <form action="{{ route('register') }}" method="POST">
                             @csrf
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label class="form-label small fw-bold text-secondary">Username</label>
-                                    <input type="text" name="username"
-                                        class="form-control bg-dark text-white border-secondary border-opacity-50 py-2"
-                                        placeholder="username_anda" required>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-mono text-white small mb-2"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">USERNAME</label>
+                                    <input type="text" name="username" class="form-control font-mono py-2 px-3"
+                                        style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                        placeholder="johndoe" value="{{ old('username') }}" required>
                                 </div>
-                                <div class="col-md-12">
-                                    <label class="form-label small fw-bold text-secondary">Email</label>
-                                    <input type="email" name="email"
-                                        class="form-control bg-dark text-white border-secondary border-opacity-50 py-2"
-                                        placeholder="nama@email.com" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-secondary">Password</label>
-                                    <input type="password" name="password"
-                                        class="form-control bg-dark text-white border-secondary border-opacity-50 py-2"
-                                        placeholder="••••••••" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-secondary">Konfirmasi Password</label>
-                                    <input type="password" name="password_confirmation"
-                                        class="form-control bg-dark text-white border-secondary border-opacity-50 py-2"
-                                        placeholder="••••••••" required>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="font-mono text-white small mb-2"
+                                        style="font-size: 0.65rem; letter-spacing: 1px;">ALAMAT EMAIL</label>
+                                    <input type="email" name="email" class="form-control font-mono py-2 px-3"
+                                        style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                        placeholder="user@capstone.com" value="{{ old('email') }}" required>
                                 </div>
                             </div>
 
-                            <input type="hidden" name="role" value="customer">
+                            <div class="mb-3">
+                                <label class="font-mono text-white small mb-2"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">PASSWORD</label>
+                                <input type="password" name="password" class="form-control font-mono py-2 px-3"
+                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                    placeholder="••••••••" required>
+                            </div>
 
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">Daftar
-                                    Akun</button>
+                            <div class="mb-3">
+                                <label class="font-mono text-white small mb-2"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">KONFIRMASI PASSWORD</label>
+                                <input type="password" name="password_confirmation" class="form-control font-mono py-2 px-3"
+                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                    placeholder="••••••••" required>
+                            </div>
+
+                            <hr style="border-color: var(--border); margin: 1.5rem 0;">
+
+                            {{-- Section 2: Data Profil Pelanggan (UserDetail) --}}
+                            <div class="mb-3">
+                                <label class="font-mono text-white small mb-2"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">NAMA LENGKAP</label>
+                                <input type="text" name="fullName" class="form-control font-mono py-2 px-3"
+                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                    placeholder="John Doe" value="{{ old('fullName') }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="font-mono text-white small mb-2"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">NOMOR TELEPON</label>
+                                <input type="number" name="phone" class="form-control font-mono py-2 px-3"
+                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
+                                    placeholder="081234567890" value="{{ old('phone') }}" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="font-mono text-white small mb-2"
+                                    style="font-size: 0.65rem; letter-spacing: 1px;">ALAMAT RUMAH</label>
+                                <textarea name="address" class="form-control font-mono py-2 px-3" rows="2"
+                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem; resize: none;"
+                                    placeholder="Jl. Anggrek No. 12, Jakarta" required>{{ old('address') }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn-nav w-100 py-3 mb-4 text-center d-block border-0"
+                                style="background: var(--accent); color: #000; font-weight: 700; cursor: pointer;">
+                                DAFTAR AKUN
+                            </button>
+
+                            <div class="text-center">
+                                <p class="font-mono text-white mb-0" style="font-size: 0.75rem;">
+                                    Sudah punya akun?
+                                    <a href="{{ route('login') }}"
+                                        class="text-white text-decoration-none border-bottom border-secondary">Login</a>
+                                </p>
                             </div>
                         </form>
-
-                        <div class="text-center mt-4">
-                            <p class="small text-secondary">Sudah punya akun? <a href="/login"
-                                    class="text-primary text-decoration-none fw-bold">Login Disini</a></p>
-                        </div>
                     </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ route('landing') }}" class="font-mono text-secondary text-decoration-none small">
+                        <i class="bi bi-arrow-left me-2"></i> Kembali ke Beranda
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        input.form-control:focus,
+        textarea.form-control:focus {
+            background: var(--bg-base) !important;
+            border-color: var(--accent) !important;
+            color: var(--text-primary) !important;
+            box-shadow: 0 0 10px var(--accent-dim) !important;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
 @endsection

@@ -6,8 +6,12 @@ use App\Models\Category;
 use App\Models\Rental;
 use App\Models\Vehicle;
 use App\Models\Wishlist;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Str;
 
 class LandingController extends Controller
 {
@@ -15,7 +19,7 @@ class LandingController extends Controller
     {
         $categories = Category::all();
 
-        $query = Vehicle::with(['category', 'car', 'motorcycle']);
+        $query = Vehicle::with(['category', 'car', 'motorcycle'])->where('status', 'available');
 
         if ($request->has('category') && $request->category != '') {
             $query->where('category_id', $request->category);
@@ -99,7 +103,6 @@ class LandingController extends Controller
         if (empty($type) || $type === 'car') {
             $carsQuery = clone $wishlistQuery;
 
-            // Filter hanya yang memiliki relasi mobil
             $carsQuery->whereHas('vehicles.car', function ($q) use ($search, $categoryName) {
                 if ($search) {
                     $q->where('model', 'like', "%{$search}%");
@@ -186,9 +189,154 @@ class LandingController extends Controller
 
         $bookings = $query->latest()->get();
 
-        // dd($bookings->payment);
-        // dd($bookings->payment->net_amount);
-
+        $bookings->each(function ($booking) {
+            $payments = $booking->payment;
+            $dpPayment = $payments->where('status', 'paid')->first();
+            $repayment = $dpPayment
+                ? $payments->where('id', '!=', $dpPayment->id)->first()
+                : null;
+            if ($repayment && $repayment->status === 'paid') {
+                $booking->remaining_amount = 0;
+            } elseif ($dpPayment) {
+                $booking->remaining_amount = $booking->total_price - $dpPayment->amount;
+            } else {
+                $booking->remaining_amount = $booking->total_price;
+            }
+            $booking->is_repayment_created = (bool) $repayment;
+            $booking->repayment_status = $repayment ? $repayment->status : 'unpaid';
+        });
         return view('riwayat', compact('bookings'));
+    }
+
+    public function search(Request $request)
+    {
+        $categories = Category::all();
+
+        $lokasi = $request->get('lokasi');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $kapasitasDibutuhkan = (int) $request->get('kapasitas', 2);
+        $priceRange = $request->get('price_range');
+
+        if (!$lokasi || !$startDate || !$endDate) {
+            return redirect()->back()->with('error', 'Silakan isi parameter pencarian terlebih dahulu.');
+        }
+
+        $start = Carbon::parse($startDate);
+        $end = Carbon::parse($endDate);
+        $diffInDays = Carbon::now()->startOfDay()->diffInDays($end->startOfDay()) + 1;
+
+        if ($diffInDays > 3) {
+            $diffInDays = 3;
+        }
+
+        $cacheKey = 'weather_' . Str::slug($lokasi) . '_' . $diffInDays;
+
+        $isRainyPeriod = Cache::remember($cacheKey, now()->addHours(2), function () use ($lokasi, $diffInDays, $start, $end) {
+            try {
+                $response = Http::timeout(3)->get("https://api.weatherapi.com/v1/forecast.json", [
+                    'key'  => env('WHEATER_API'),
+                    'q'    => $lokasi . ', Indonesia',
+                    'days' => $diffInDays,
+                ]);
+
+                if ($response->successful()) {
+                    $weatherResponse = $response->json();
+                    if (isset($weatherResponse['forecast']['forecastday'])) {
+                        foreach ($weatherResponse['forecast']['forecastday'] as $forecast) {
+                            $date = Carbon::parse($forecast['date']);
+                            if ($date->between($start, $end)) {
+                                $condition = strtolower($forecast['day']['condition']['text']);
+                                if (str_contains($condition, 'rain') || str_contains($condition, 'storm')) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+            }
+            return false;
+        });
+
+        $baseQuery = Vehicle::with(['category', 'car', 'motorcycle'])->where('status', 'available');
+
+        if ($kapasitasDibutuhkan > 2) {
+            $baseQuery->whereHas('car', function ($q) use ($kapasitasDibutuhkan) {
+                $q->where('capacity', '>=', $kapasitasDibutuhkan);
+            });
+        } else {
+            $baseQuery->where(function ($q) use ($kapasitasDibutuhkan) {
+                $q->whereHas('car', function ($subQ) use ($kapasitasDibutuhkan) {
+                    $subQ->where('capacity', '>=', $kapasitasDibutuhkan);
+                })->orHas('motorcycle');
+            });
+        }
+
+        if ($priceRange && $priceRange !== 'all') {
+            [$minPrice, $maxPrice] = explode('-', $priceRange);
+            $baseQuery->whereBetween('daily_rate', [$minPrice, $maxPrice]);
+        }
+
+        if ($request->filled('category')) {
+            $baseQuery->whereHas('category', function ($q) use ($request) {
+                $q->where('name', $request->category);
+            });
+        }
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $baseQuery->where('model', 'like', "%{$keyword}%");
+        }
+
+        $selectedCategory = $request->get('category');
+
+        $carQuery = clone $baseQuery;
+        $motorQuery = clone $baseQuery;
+
+        if ($selectedCategory === 'motorcycle' || $request->get('type') === 'motorcycle') {
+            $carQuery->whereRaw('1 = 0');
+            $motorQuery->where('vehicle_type', 'motorcycle');
+        } elseif ($selectedCategory === 'car' || $request->get('type') === 'car') {
+            $carQuery->where('vehicle_type', 'car');
+            $motorQuery->whereRaw('1 = 0');
+        } else {
+            $carQuery->where('vehicle_type', 'car');
+            $motorQuery->where('vehicle_type', 'motorcycle');
+        }
+
+        $sortOption = $request->get('sort', 'default');
+        if ($sortOption === 'price-asc') {
+            $carQuery->orderBy('daily_rate', 'asc');
+            $motorQuery->orderBy('daily_rate', 'asc');
+        } elseif ($sortOption === 'price-desc') {
+            $carQuery->orderBy('daily_rate', 'desc');
+            $motorQuery->orderBy('daily_rate', 'desc');
+        } elseif ($sortOption === 'name-asc') {
+            $carQuery->orderBy('model', 'asc');
+            $motorQuery->orderBy('model', 'asc');
+        } else {
+            if ($isRainyPeriod) {
+                $carQuery->orderBy('daily_rate', 'asc');
+                $motorQuery->orderBy('daily_rate', 'asc');
+            } else {
+                $carQuery->orderBy('daily_rate', 'asc');
+                $motorQuery->orderBy('daily_rate', 'asc');
+            }
+        }
+
+        $perPage = 8;
+
+        $cars = $carQuery->paginate($perPage, ['*'], 'cars_page');
+        $motorcycles = $motorQuery->paginate($perPage, ['*'], 'motorcycles_page');
+
+        $cars->appends($request->all());
+        $motorcycles->appends($request->all());
+
+        $pesanCuaca = $isRainyPeriod
+            ? "Peringatan cuaca: Diperkirakan hujan di " . $lokasi . " selama waktu sewa. Kami mengutamakan rekomendasi kendaraan roda 4 demi kenyamanan Anda."
+            : "Cuaca diprediksi cerah di " . $lokasi . ". Silakan pilih armada terbaik Anda!";
+
+        return view('pencarian', compact('cars', 'motorcycles', 'pesanCuaca', 'isRainyPeriod', 'categories'));
     }
 }

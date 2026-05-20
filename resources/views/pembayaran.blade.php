@@ -1757,6 +1757,8 @@
                 days: totalDays,
                 total: totalPayment,
                 vehicle_id: {{ $vehicle->id ?? 0 }},
+                merchant_ref: window.currentMerchantRef || '',
+                total_price: totalPayment,
                 cancel_reference: window.currentTripayReference
             };
 

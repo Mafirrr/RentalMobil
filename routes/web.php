@@ -15,6 +15,8 @@ Route::get('/',  [LandingController::class, 'index'])->name('landing');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -40,7 +42,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::get('/kendaraan', [LandingController::class, 'category'])->name('category');
-
+Route::get('/pencarian', [LandingController::class, 'search'])->name('vehicle.search');
 Route::get('/detail/{id}', [DetailController::class, 'detail'])->name('detail');
 
 
@@ -49,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/rent', [RentalController::class, 'store'])->name('rental.store');
     Route::post('/vehicle/{id}/wishlist', [WishlistController::class, 'toggleWishlist'])->name('vehicle.wishlist');
     Route::post('/pembayaran', [PaymentController::class, 'index'])->name('pembayaran');
+    Route::post('/pelunasan', [PaymentController::class, 'pelunasan'])->name('pelunasan');
     Route::post('/pembayaran/tripay-api', [PaymentController::class, 'generateTripayPayment']);
     Route::post('/rentals/store', [PaymentController::class, 'store']);
     Route::get('/wishlist', [LandingController::class, 'wishlist'])->name('wishlist');

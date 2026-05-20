@@ -419,6 +419,28 @@
             background: #00c850;
         }
 
+        .status-unavailable {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            padding: 4px 10px;
+            background: rgba(200, 33, 0, 0.1);
+            border: 1px solid rgba(200, 33, 0, 0.1);
+            color: #c80000;
+            border-radius: 1px;
+        }
+
+        .status-unavailable::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #c80000;
+        }
+
         .divider {
             border: none;
             border-top: 1px solid var(--border);
@@ -592,6 +614,15 @@
 
         .btn-primary:active {
             transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--border);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none !important;
+            pointer-events: none;
         }
 
         .btn-secondary {
@@ -856,7 +887,6 @@
                 </div>
             </div>
 
-            {{-- RIGHT: INFO PANEL --}}
             <div class="info-panel">
                 <div>
                     <div class="brand-tag">{{ $vehicle->category->name }}</div>
@@ -881,7 +911,8 @@
                         </div>
                         <span class="rating-num">{{ $rating }}</span>
                         <span class="rating-count">({{ $total_ulasan }} ulasan)</span>
-                        <div class="status-available">{{ $vehicle->status }}</div>
+                        <div class="{{ $vehicle->status == 'available' ? 'status-available' : 'status-unavailable' }}">
+                            {{ $vehicle->status }}</div>
                     </div>
                 </div>
 
@@ -997,7 +1028,8 @@
                         <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
 
                         <button type="submit" class="btn-primary" id="bookingBtn" style="border: none; width: 100%;"
-                            data-auth="{{ Auth::check() ? 'true' : 'false' }}">
+                            data-auth="{{ Auth::check() ? 'true' : 'false' }}"
+                            {{ $vehicle->status == 'available' ? '' : 'disabled' }}>
                             <i class="bi bi-calendar2-check"></i> PESAN SEKARANG
                         </button>
                     </form>

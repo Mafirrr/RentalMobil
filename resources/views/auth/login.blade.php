@@ -59,7 +59,7 @@
                             <div class="text-center">
                                 <p class="font-mono text-white mb-0" style="font-size: 0.75rem;">
                                     Belum punya akun?
-                                    <a href="{{ route('login') }}"
+                                    <a href="{{ route('register') }}"
                                         class="text-white text-decoration-none border-bottom border-secondary">Daftar</a>
                                 </p>
                             </div>

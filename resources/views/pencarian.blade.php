@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Wishlist - Capstone')
+@section('title', 'Semua Kendaraan - Capstone')
 @php $hideFooter = true; @endphp
 
 @push('styles')
@@ -130,7 +130,7 @@
             border-bottom: 1px solid var(--border);
             padding: 20px 0;
             position: sticky;
-            top: 65px;
+            top: 100px;
             z-index: 100;
         }
 
@@ -561,10 +561,61 @@
                 justify-content: center;
             }
         }
+
+        .pagination {
+            background-color: #0f172a;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-flex;
+        }
+
+        .pagination .page-item .page-link {
+            background-color: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            margin: 0 4px;
+            padding: 8px 16px;
+            border-radius: 6px !important;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: rgba(200, 255, 0, 0.9) !important;
+            border-color: rgba(200, 255, 0, 1) !important;
+            color: #0f172a !important;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(200, 255, 0, 0.6), 0 0 4px rgba(200, 255, 0, 0.4);
+        }
+
+        .pagination .page-item .page-link:hover {
+            background-color: #334155;
+            color: rgba(200, 255, 0, 1);
+            border-color: rgba(200, 255, 0, 0.5);
+        }
+
+        .pagination .page-link:focus {
+            box-shadow: 0 0 0 3px rgba(200, 255, 0, 0.2);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            background-color: #0f172a;
+            color: #475569;
+            border-color: #1e293b;
+            opacity: 0.6;
+        }
     </style>
 @endpush
 @section('content')
-    <form action="{{ route('wishlist') }}" method="GET" id="filterForm">
+    <section class="page-header">
+    </section>
+
+    <form action="{{ route('vehicle.search') }}" method="GET" id="filterForm">
+        <input type="hidden" name="lokasi" value="{{ request('lokasi') }}">
+        <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+        <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+        <input type="hidden" name="price_range" value="{{ request('price_range') }}">
+        <input type="hidden" name="kapasitas" value="{{ request('kapasitas') }}">
+
         <div class="filter-bar">
             <div class="container">
                 <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
@@ -601,14 +652,10 @@
 
                         <div style="position:relative">
                             <select class="filter-select" name="sort" id="sortFilter" onchange="this.form.submit()">
-                                <option value="default" {{ request('sort') == 'default' ? 'selected' : '' }}>Urutkan
-                                </option>
-                                <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Harga
-                                    Terendah</option>
-                                <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Harga
-                                    Tertinggi</option>
-                                <option value="name-asc" {{ request('sort') == 'name-asc' ? 'selected' : '' }}>Nama A-Z
-                                </option>
+                                <option value="default">Urutkan</option>
+                                <option value="price-asc">Harga Terendah</option>
+                                <option value="price-desc">Harga Tertinggi</option>
+                                <option value="name-asc">Nama A-Z</option>
                             </select>
                             <i class="bi bi-chevron-down"
                                 style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.7rem;pointer-events:none"></i>
@@ -629,7 +676,20 @@
             @if ($cars->isNotEmpty() || $motorcycles->isNotEmpty())
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <div class="result-info">Menampilkan <span
-                            id="visibleCount">{{ $cars->count() + $motorcycles->count() }}</span> kendaraan</div>
+                            id="visibleCount">{{ $cars->count() + $motorcycles->count() }}</span>
+                        kendaraan</div>
+                </div>
+                <div class="result-info">
+                    {!! str_replace(
+                        ['hujan', 'Hujan', 'cerah', 'Cerah'],
+                        [
+                            '<span class="badge-hujan">HUJAN</span>',
+                            '<span class="badge-hujan">HUJAN</span>',
+                            '<span class="badge-cerah">CERAH</span>',
+                            '<span class="badge-cerah">CERAH</span>',
+                        ],
+                        e($pesanCuaca),
+                    ) !!}
                 </div>
 
                 @if ((!request()->filled('type') || request('type') == 'car') && $cars->isNotEmpty())
@@ -644,85 +704,17 @@
                 @endif
 
                 <div class="row g-4" id="mobilGrid">
+
                     @foreach ($cars as $car)
-                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="mobil"
-                            data-cat="{{ $car->category->name }}" data-name="{{ $car->model }}"
-                            data-price="{{ $car->daily_rate }}">
+                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="mobil" data-cat="City Car"
+                            data-name="{{ $car->model }}" data-price="{{ $car->daily_rate }}"
+                            style="transition-delay:0s">
                             <a href="{{ route('detail', $car->id) }}" class="card-link">
                                 <div class="car-card">
                                     <div class="car-img-wrap">
                                         <span class="car-badge">{{ strtoupper($car->category->name) }}</span>
                                         <span
                                             class="avail-badge {{ $car->status == 'available' ? 'available' : 'booked' }}">{{ $car->status }}</span>
-                                        <svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg"
-                                            style="width:100%;max-width:240px;position:relative;z-index:1;">
-                                            <defs>
-                                                <linearGradient id="mc0" x1="0%" y1="0%" x2="100%"
-                                                    y2="100%">
-                                                    <stop offset="0%" style="stop-color:#282828" />
-                                                    <stop offset="100%" style="stop-color:#141414" />
-                                                </linearGradient>
-                                            </defs>
-                                            <ellipse cx="140" cy="110" rx="110" ry="7"
-                                                fill="rgba(0,0,0,0.45)" />
-                                            <path d="M28 78 L28 94 Q28 101 35 101 L245 101 Q252 101 252 94 L252 78 Z"
-                                                fill="url(#mc0)" stroke="#282828" stroke-width="1" />
-                                            <path d="M70 78 L88 50 Q95 42 107 42 L173 42 Q185 42 192 50 L210 78 Z"
-                                                fill="#1c1c1c" stroke="#222" stroke-width="1" />
-                                            <circle cx="72" cy="101" r="18" fill="#0e0e0e" stroke="#333"
-                                                stroke-width="1.5" />
-                                            <circle cx="208" cy="101" r="18" fill="#0e0e0e" stroke="#333"
-                                                stroke-width="1.5" />
-                                        </svg>
-                                    </div>
-                                    <div class="car-body">
-                                        <div class="car-category">{{ $car->category->name }} · {{ $car->color }}</div>
-                                        <div class="car-name">{{ $car->model }}</div>
-                                        <div class="car-specs">
-                                            <div class="spec-item"><i class="bi bi-people-fill"></i>
-                                                {{ $car->car->capacity ?? '-' }} Kursi</div>
-                                            <div class="spec-item"><i class="bi bi-gear-fill"></i>
-                                                {{ $car->car->transmission ?? '-' }}</div>
-                                            <div class="spec-item"><i class="bi bi-droplet-fill"></i>
-                                                {{ $car->car->fuel_type ?? '-' }}</div>
-                                        </div>
-                                        <div class="car-footer">
-                                            <div class="car-price"><span class="price-amount">Rp
-                                                    {{ number_format($car->daily_rate, 0, ',', '.') }}</span><span
-                                                    class="price-label">per hari</span></div>
-                                            <div class="btn-rent">DETAIL <i class="bi bi-arrow-right"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-
-                @if ((!request()->filled('type') || request('type') == 'motorcycle') && $motorcycles->isNotEmpty())
-                    <div class="section-divider" id="motorDivider">
-                        <div class="section-divider-line"></div>
-                        <div class="section-divider-label" style="color:#00d4ff;">
-                            <i class="bi bi-bicycle" style="color:#00d4ff"></i> MOTOR
-                            <span class="section-divider-count"
-                                style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:#00d4ff;"
-                                id="motorCount">{{ $motorcycles->count() }}</span>
-                        </div>
-                        <div class="section-divider-line"></div>
-                    </div>
-                @endif
-
-                <div class="row g-4" id="motorGrid">
-                    @foreach ($motorcycles as $vehicle)
-                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="motor"
-                            data-cat="{{ $vehicle->category->name }}" data-name="{{ $vehicle->model }}"
-                            data-price="{{ $vehicle->daily_rate }}">
-                            <a href="{{ route('detail', $vehicle->id) }}" class="card-link">
-                                <div class="car-card motor-card">
-                                    <div class="car-img-wrap">
-                                        <span class="car-badge">{{ strtoupper($vehicle->category->name) }}</span>
-                                        <span
-                                            class="avail-badge {{ $vehicle->status == 'available' ? 'available' : 'booked' }}">{{ $vehicle->status }}</span>
                                         <svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg"
                                             style="width:100%;max-width:240px;position:relative;z-index:1;">
                                             <defs>
@@ -745,19 +737,103 @@
                                         </svg>
                                     </div>
                                     <div class="car-body">
-                                        <div class="car-category">{{ $vehicle->motorcycle->transmission ?? '-' }} ·
-                                            {{ $vehicle->motorcycle->engine_capacity ?? '-' }}cc · {{ $vehicle->color }}
+                                        <div class="car-category">{{ $car->category->name }} · {{ $car->color }}</div>
+                                        <div class="car-name">{{ $car->model }}</div>
+                                        <div class="car-specs">
+                                            <div class="spec-item"><i class="bi bi-people-fill"></i>
+                                                {{ $car->car->capacity }}
+                                                Kursi</div>
+                                            <div class="spec-item"><i class="bi bi-gear-fill"></i>
+                                                {{ $car->car->transmission }}</div>
+                                            <div class="spec-item"><i class="bi bi-droplet-fill"></i>
+                                                {{ $car->car->fuel_type }}</div>
                                         </div>
+                                        <div class="car-footer">
+                                            <div class="car-price"><span class="price-amount">Rp
+                                                    {{ number_format($car->daily_rate, 0, ',', '.') }}</span><span
+                                                    class="price-label">per hari</span></div>
+                                            <div class="btn-rent">DETAIL <i class="bi bi-arrow-right"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @endforeach
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $cars->links('pagination::bootstrap-5') }}
+                    </div>
+                </div>
+
+                @if ((!request()->filled('type') || request('type') == 'motorcycle') && $motorcycles->isNotEmpty())
+                    <div class="section-divider" id="motorDivider">
+                        <div class="section-divider-line"></div>
+                        <div class="section-divider-label" style="color:#00d4ff;">
+                            <i class="bi bi-bicycle" style="color:#00d4ff"></i> MOTOR
+                            <span class="section-divider-count"
+                                style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:#00d4ff;"
+                                id="motorCount">{{ $motorcycles->count() }}</span>
+                        </div>
+                        <div class="section-divider-line"></div>
+                    </div>
+                @endif
+
+                <div class="row g-4" id="motorGrid">
+
+                    @foreach ($motorcycles as $vehicle)
+                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="motor" data-cat="Matic"
+                            data-name="honda pcx 160" data-price="150000" style="transition-delay:0.24s">
+                            <a href="{{ route('detail', $vehicle->id) }}" class="card-link">
+                                <div class="car-card motor-card">
+                                    <div class="car-img-wrap">
+                                        <span class="car-badge">{{ strtoupper($vehicle->category->name) }}</span>
+                                        <span
+                                            class="avail-badge {{ $vehicle->status == 'available' ? 'available' : 'booked' }}">{{ $vehicle->status }}</span>
+                                        <svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg"
+                                            style="width:100%;max-width:220px;position:relative;z-index:1;">
+                                            <defs>
+                                                <linearGradient id="mg4" x1="0%" y1="0%"
+                                                    x2="100%" y2="100%">
+                                                    <stop offset="0%" style="stop-color:#252525" />
+                                                    <stop offset="100%" style="stop-color:#151515" />
+                                                </linearGradient>
+                                            </defs>
+                                            <ellipse cx="140" cy="112" rx="105" ry="6"
+                                                fill="rgba(0,0,0,0.4)" />
+                                            <circle cx="80" cy="98" r="26" fill="#111" stroke="#2a2a2a"
+                                                stroke-width="2" />
+                                            <circle cx="80" cy="98" r="17" fill="#0a0a0a" stroke="#333"
+                                                stroke-width="1.5" />
+                                            <circle cx="80" cy="98" r="6" fill="#1a1a1a"
+                                                stroke="rgba(0,212,255,0.4)" stroke-width="1.2" />
+                                            <circle cx="210" cy="98" r="24" fill="#111" stroke="#2a2a2a"
+                                                stroke-width="2" />
+                                            <circle cx="210" cy="98" r="15" fill="#0a0a0a" stroke="#333"
+                                                stroke-width="1.5" />
+                                            <circle cx="210" cy="98" r="5" fill="#1a1a1a"
+                                                stroke="rgba(0,212,255,0.4)" stroke-width="1.2" />
+                                            <path d="M80 96 L108 58 L170 53 L204 70 L210 80" fill="none"
+                                                stroke="#2a2a2a" stroke-width="3" stroke-linecap="round" />
+                                            <path d="M108 58 L170 53 L198 66 L178 79 L124 81 Z" fill="url(#mg4)"
+                                                stroke="#333" stroke-width="1" />
+                                            <ellipse cx="212" cy="68" rx="10" ry="7"
+                                                fill="rgba(0,212,255,0.8)" opacity="0.7" />
+                                            <rect x="78" y="66" width="10" height="5" rx="2"
+                                                fill="rgba(255,50,50,0.9)" />
+                                        </svg>
+                                    </div>
+                                    <div class="car-body">
+                                        <div class="car-category">{{ $vehicle->motorcycle->transmission }} ·
+                                            {{ $vehicle->motorcycle->engine_capacity }}cc · {{ $vehicle->color }}</div>
                                         <div class="car-name">{{ $vehicle->model }}</div>
                                         <div class="car-specs">
                                             <div class="spec-item"><i class="bi bi-speedometer2"
                                                     style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->engine_capacity ?? '-' }}cc</div>
+                                                {{ $vehicle->motorcycle->engine_capacity }}cc</div>
                                             <div class="spec-item"><i class="bi bi-gear-fill" style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->transmission ?? '-' }}</div>
+                                                {{ $vehicle->motorcycle->transmission }}</div>
                                             <div class="spec-item"><i class="bi bi-shield-check"
                                                     style="color:#00d4ff"></i>
-                                                {{ ($vehicle->motorcycle->includes_helmet ?? 0) == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
+                                                {{ $vehicle->motorcycle->includes_helmet == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
                                             </div>
                                         </div>
                                         <div class="car-footer">
@@ -771,8 +847,12 @@
                             </a>
                         </div>
                     @endforeach
+                    <div class="d-flex justify-content-center mt-4 w-100">
+                        {{ $motorcycles->links('pagination::bootstrap-5') }}
+                    </div>
                 </div>
             @else
+                <!-- Empty state -->
                 <div class="empty-state" id="emptyState">
                     <i class="bi bi-search d-block"></i>
                     <h5
@@ -804,13 +884,12 @@
             const tabs = document.querySelectorAll('.filter-tab');
             const categoryFilter = document.getElementById('categoryFilter');
             const sortFilter = document.getElementById('sortFilter');
-            const statusFilter = document.getElementById('statusFilter');
             const searchInput = document.getElementById('searchInput');
+
             if (filterForm) {
                 tabs.forEach(tab => {
                     tab.addEventListener('click', () => {
                         if (typeInput) {
-
                             typeInput.value = tab.getAttribute('data-value');
                             if (categoryFilter) categoryFilter.value = '';
 
@@ -827,12 +906,6 @@
 
                 if (sortFilter) {
                     sortFilter.addEventListener('change', () => {
-                        filterForm.submit();
-                    });
-                }
-
-                if (statusFilter) {
-                    statusFilter.addEventListener('change', () => {
                         filterForm.submit();
                     });
                 }
