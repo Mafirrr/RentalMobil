@@ -312,7 +312,7 @@
         /* ICON EDIT */
         .btn-primary .bi,
         .bi-pencil {
-            color: #ffffff !important;
+            color: #000 !important;
         }
 
         /* ICON DELETE */
@@ -375,10 +375,6 @@
             <li><a href="{{ route('admin.rentals') }}"
                     class="nav-link {{ Route::is('admin.rentals*') ? 'active' : '' }}"><i
                         class="bi bi-person-check me-3"></i>Penyewaan</a></li>
-            <li><a href="{{ route('admin.report') }}"
-                    class="nav-link {{ Route::is('admin.report') ? 'active' : '' }}"><i
-                        class="bi bi-person-check me-3"></i>Laporan
-                </a></li>
         </ul>
 
         <hr class="text-secondary opacity-25">
@@ -398,8 +394,6 @@
                     Manajemen Armada
                 @elseif(Route::is('admin.rentals*'))
                     Input Penyewaan
-                @elseif(Route::is('admin.report*'))
-                    Laporan Penyewaan
                 @else
                     Panel Admin
                 @endif

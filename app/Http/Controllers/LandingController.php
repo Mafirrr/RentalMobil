@@ -11,28 +11,53 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LandingController extends Controller
 {
     public function index(Request $request)
     {
         $categories = Category::all();
-
         $query = Vehicle::with(['category', 'car', 'motorcycle'])->where('status', 'available');
-
         if ($request->has('category') && $request->category != '') {
             $query->where('category_id', $request->category);
         }
-
         $vehicles = $query->latest()->take(6)->get();
+        foreach ($vehicles as $vehicle) {
+            $vehicleImages = [
+                'front' => null,
+                'right' => asset('images/placeholder.jpg'),
+                'left'  => asset('images/placeholder.jpg'),
+                'back'  => asset('images/placeholder.jpg'),
+            ];
 
+            $folderPath = 'vehicles/' . $vehicle->id;
+
+            if (Storage::disk('public')->exists($folderPath)) {
+                $files = Storage::disk('public')->files($folderPath);
+                foreach ($files as $file) {
+                    $fileName = basename($file);
+                    if (Str::startsWith($fileName, 'foto_depan')) {
+                        $vehicleImages['front'] = asset('storage/' . $file);
+                    } elseif (Str::startsWith($fileName, 'foto_samping_kanan')) {
+                        $vehicleImages['right'] = asset('storage/' . $file);
+                    } elseif (Str::startsWith($fileName, 'foto_samping_kiri')) {
+                        $vehicleImages['left'] = asset('storage/' . $file);
+                    } elseif (Str::startsWith($fileName, 'foto_belakang')) {
+                        $vehicleImages['back'] = asset('storage/' . $file);
+                    }
+                }
+            }
+            $vehicle->images_data = $vehicleImages;
+        }
         return view('welcome', compact('vehicles', 'categories'));
     }
 
     public function category(Request $request)
     {
         $categories = Category::all();
+
         $query = Vehicle::with(['car', 'motorcycle', 'category']);
 
         if ($request->filled('type')) {
@@ -53,7 +78,6 @@ class LandingController extends Controller
                     ->orWhere('plate_number', 'like', '%' . $searchTerm . '%');
             });
         }
-
         if ($request->filled('sort')) {
             switch ($request->sort) {
                 case 'price-asc':
@@ -73,17 +97,37 @@ class LandingController extends Controller
             $query->latest();
         }
 
-        $allVehicles = $query->get();
+        $carQuery = (clone $query)->where('vehicle_type', 'car');
+        $motorQuery = (clone $query)->where('vehicle_type', 'motorcycle');
 
-        $cars = $allVehicles->filter(function ($vehicle) {
-            return !is_null($vehicle->car);
-        });
+        $cars = $carQuery->paginate(8, ['*'], 'car_page')->withQueryString();
+        $motorcycles = $motorQuery->paginate(8, ['*'], 'motor_page')->withQueryString();
 
-        $motorcycles = $allVehicles->filter(function ($vehicle) {
-            return !is_null($vehicle->motorcycle);
-        });
+        foreach ($cars as $car) {
+            $car->images_data = $this->getVehicleImage($car->id);
+        }
+
+        foreach ($motorcycles as $motor) {
+            $motor->images_data = $this->getVehicleImage($motor->id);
+        }
 
         return view('category', compact('motorcycles', 'cars', 'categories'));
+    }
+
+    private function getVehicleImage($vehicleId)
+    {
+        $images = ['front' => null];
+        $folderPath = 'vehicles/' . $vehicleId;
+        if (Storage::disk('public')->exists($folderPath)) {
+            $files = Storage::disk('public')->files($folderPath);
+            foreach ($files as $file) {
+                if (Str::startsWith(basename($file), 'foto_depan')) {
+                    $images['front'] = asset('storage/' . $file);
+                    break;
+                }
+            }
+        }
+        return $images;
     }
 
     public function wishlist(Request $request)
@@ -164,7 +208,10 @@ class LandingController extends Controller
         $search = $request->input('search');
 
         $query = Rental::where('user_id', $userId)
-            ->with(['vehicle.car', 'vehicle.motorcycle', 'vehicle.category', 'payment']);
+            ->with(['vehicle.car', 'vehicle.motorcycle', 'vehicle.category', 'payment'])
+            ->withSum(['payment as total_paid' => function ($q) {
+                $q->where('status', 'paid');
+            }], 'net_amount');
 
         if ($status) {
             $query->where('status', $status);
@@ -190,24 +237,20 @@ class LandingController extends Controller
         $bookings = $query->latest()->get();
 
         $bookings->each(function ($booking) {
+            $totalPaid = $booking->total_paid ?? 0;
+            $booking->remaining_amount = max(0, $booking->total_price - $totalPaid);
             $payments = $booking->payment;
             $dpPayment = $payments->where('status', 'paid')->first();
             $repayment = $dpPayment
                 ? $payments->where('id', '!=', $dpPayment->id)->first()
                 : null;
-            if ($repayment && $repayment->status === 'paid') {
-                $booking->remaining_amount = 0;
-            } elseif ($dpPayment) {
-                $booking->remaining_amount = $booking->total_price - $dpPayment->amount;
-            } else {
-                $booking->remaining_amount = $booking->total_price;
-            }
+
             $booking->is_repayment_created = (bool) $repayment;
             $booking->repayment_status = $repayment ? $repayment->status : 'unpaid';
         });
+
         return view('riwayat', compact('bookings'));
     }
-
     public function search(Request $request)
     {
         $categories = Category::all();

@@ -145,5 +145,68 @@
 
 <div id="step-5" class="setup-step d-none">
     <h4 class="text-white mb-4">Foto Kendaraan</h4>
-    <input type="file" name="image" class="form-control bg-dark border-0 text-white p-3">
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <label class="text-white-50 mb-2">Foto Depan</label>
+            <div class="mb-3">
+                <img id="preview-front" src="{{ $images['front'] ?? asset('images/placeholder.jpg') }}"
+                    class="img-fluid rounded border border-secondary style-preview"
+                    style="max-height: 200px; width: 100%; object-fit: cover;">
+            </div>
+            <input type="file" name="image_front" class="form-control bg-dark border-0 text-white p-2 image-input"
+                data-target="preview-front">
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="text-white-50 mb-2">Foto Interior</label>
+            <div class="mb-3">
+                <img id="preview-right" src="{{ $images['interior'] ?? asset('images/placeholder.jpg') }}"
+                    class="img-fluid rounded border border-secondary style-preview"
+                    style="max-height: 200px; width: 100%; object-fit: cover;">
+            </div>
+            <input type="file" name="image_interior"
+                class="form-control bg-dark border-0 text-white p-2 image-input" data-target="preview-right">
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="text-white-50 mb-2">Foto Samping</label>
+            <div class="mb-3">
+                <img id="preview-left" src="{{ $images['side'] ?? asset('images/placeholder.jpg') }}"
+                    class="img-fluid rounded border border-secondary style-preview"
+                    style="max-height: 200px; width: 100%; object-fit: cover;">
+            </div>
+            <input type="file" name="image_side" class="form-control bg-dark border-0 text-white p-2 image-input"
+                data-target="preview-left">
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <label class="text-white-50 mb-2">Foto Mesin</label>
+            <div class="mb-3">
+                <img id="preview-back" src="{{ $images['engine'] ?? asset('images/placeholder.jpg') }}"
+                    class="img-fluid rounded border border-secondary style-preview"
+                    style="max-height: 200px; width: 100%; object-fit: cover;">
+            </div>
+            <input type="file" name="image_engine"
+                class="form-control bg-dark border-0 text-white p-2 image-input" data-target="preview-back">
+        </div>
+    </div>
 </div>
+
+<script>
+    document.querySelectorAll('.image-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const targetId = this.getAttribute('data-target');
+            const previewImg = document.getElementById(targetId);
+            const file = this.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>

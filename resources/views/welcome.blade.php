@@ -1035,56 +1035,69 @@
                     <div class="col-lg-4 col-md-6 fade-up" style="transition-delay: {{ $index * 0.07 }}s">
                         <div class="car-card">
                             <div class="car-img-wrap">
-                                <span class="car-badge">{{ $car['badge'] }}</span>
-                                <svg class="car-img" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="cg{{ $index }}" x1="0%" y1="0%"
-                                            x2="100%" y2="100%">
-                                            <stop offset="0%" style="stop-color:#252525" />
-                                            <stop offset="100%" style="stop-color:#151515" />
-                                        </linearGradient>
-                                    </defs>
-                                    <ellipse cx="150" cy="118" rx="120" ry="8"
-                                        fill="rgba(0,0,0,0.4)" />
-                                    <path d="M30 85 L30 100 Q30 108 38 108 L262 108 Q270 108 270 100 L270 85 Z"
-                                        fill="url(#cg{{ $index }})" stroke="#2a2a2a" stroke-width="1" />
-                                    <path d="M75 85 L95 55 Q102 46 115 46 L185 46 Q198 46 205 55 L225 85 Z" fill="#1e1e1e"
-                                        stroke="#222" stroke-width="1" />
-                                    <path d="M82 84 L98 60 Q103 53 113 53 L148 53 L148 84 Z" fill="rgba(200,255,0,0.07)"
-                                        stroke="rgba(200,255,0,0.25)" stroke-width="0.8" />
-                                    <path d="M152 53 L187 53 Q197 53 202 60 L218 84 L152 84 Z" fill="rgba(200,255,0,0.07)"
-                                        stroke="rgba(200,255,0,0.25)" stroke-width="0.8" />
-                                    <line x1="150" y1="53" x2="150" y2="84" stroke="#111"
-                                        stroke-width="2" />
-                                    <path d="M30 85 L45 85 L64 75 L75 85 Z" fill="#1a1a1a" stroke="#222" />
-                                    <path d="M225 85 L236 75 L255 85 L270 85 Z" fill="#1a1a1a" stroke="#222" />
-                                    <rect x="31" y="78" width="22" height="7" rx="2"
-                                        fill="rgba(200,255,0,0.85)" />
-                                    <rect x="247" y="78" width="20" height="7" rx="2"
-                                        fill="rgba(255,60,60,0.85)" />
-                                    <circle cx="78" cy="108" r="20" fill="#111" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <circle cx="78" cy="108" r="12" fill="#0a0a0a" stroke="#444"
-                                        stroke-width="1" />
-                                    <circle cx="78" cy="108" r="5" fill="#222"
-                                        stroke="rgba(200,255,0,0.4)" stroke-width="1" />
-                                    <line x1="78" y1="96" x2="78" y2="120" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <line x1="66" y1="108" x2="90" y2="108" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <circle cx="222" cy="108" r="20" fill="#111" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <circle cx="222" cy="108" r="12" fill="#0a0a0a" stroke="#444"
-                                        stroke-width="1" />
-                                    <circle cx="222" cy="108" r="5" fill="#222"
-                                        stroke="rgba(200,255,0,0.4)" stroke-width="1" />
-                                    <line x1="222" y1="96" x2="222" y2="120" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <line x1="210" y1="108" x2="234" y2="108" stroke="#333"
-                                        stroke-width="1.5" />
-                                    <line x1="32" y1="93" x2="268" y2="93"
-                                        stroke="rgba(200,255,0,0.12)" stroke-width="0.8" />
-                                </svg>
+                                <div class="car-img-container"
+                                    style="width: 100%; aspect-ratio: 300 / 130; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    @if (isset($car->images_data['front']) && $car->images_data['front'] !== null)
+                                        {{-- FOTO UTUH: Mengikuti ukuran kontainer aspek rasio secara presisi --}}
+                                        <img class="car-img" src="{{ $car->images_data['front'] }}"
+                                            alt="{{ $car->model }}"
+                                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                                    @else
+                                        {{-- SVG DEFAULT: Mengisi penuh kontainer dengan aspek rasio yang sama --}}
+                                        <svg class="car-img" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg"
+                                            style="width: 100%; height: 100%; border-radius: 8px;">
+                                            <defs>
+                                                <linearGradient id="cg{{ $index }}" x1="0%" y1="0%"
+                                                    x2="100%" y2="100%">
+                                                    <stop offset="0%" style="stop-color:#252525" />
+                                                    <stop offset="100%" style="stop-color:#151515" />
+                                                </linearGradient>
+                                            </defs>
+                                            <ellipse cx="150" cy="118" rx="120" ry="8"
+                                                fill="rgba(0,0,0,0.4)" />
+                                            <path d="M30 85 L30 100 Q30 108 38 108 L262 108 Q270 108 270 100 L270 85 Z"
+                                                fill="url(#cg{{ $index }})" stroke="#2a2a2a" stroke-width="1" />
+                                            <path d="M75 85 L95 55 Q102 46 115 46 L185 46 Q198 46 205 55 L225 85 Z"
+                                                fill="#1e1e1e" stroke="#222" stroke-width="1" />
+                                            <path d="M82 84 L98 60 Q103 53 113 53 L148 53 L148 84 Z"
+                                                fill="rgba(200,255,0,0.07)" stroke="rgba(200,255,0,0.25)"
+                                                stroke-width="0.8" />
+                                            <path d="M152 53 L187 53 Q197 53 202 60 L218 84 L152 84 Z"
+                                                fill="rgba(200,255,0,0.07)" stroke="rgba(200,255,0,0.25)"
+                                                stroke-width="0.8" />
+                                            <line x1="150" y1="53" x2="150" y2="84"
+                                                stroke="#111" stroke-width="2" />
+                                            <path d="M30 85 L45 85 L64 75 L75 85 Z" fill="#1a1a1a" stroke="#222" />
+                                            <path d="M225 85 L236 75 L255 85 L270 85 Z" fill="#1a1a1a" stroke="#222" />
+                                            <rect x="31" y="78" width="22" height="7" rx="2"
+                                                fill="rgba(200,255,0,0.85)" />
+                                            <rect x="247" y="78" width="20" height="7" rx="2"
+                                                fill="rgba(255,60,60,0.85)" />
+                                            <circle cx="78" cy="108" r="20" fill="#111" stroke="#333"
+                                                stroke-width="1.5" />
+                                            <circle cx="78" cy="108" r="12" fill="#0a0a0a" stroke="#444"
+                                                stroke-width="1" />
+                                            <circle cx="78" cy="108" r="5" fill="#222"
+                                                stroke="rgba(200,255,0,0.4)" stroke-width="1" />
+                                            <line x1="78" y1="96" x2="78" y2="120"
+                                                stroke="#333" stroke-width="1.5" />
+                                            <line x1="66" y1="108" x2="90" y2="108"
+                                                stroke="#333" stroke-width="1.5" />
+                                            <circle cx="222" cy="108" r="20" fill="#111" stroke="#333"
+                                                stroke-width="1.5" />
+                                            <circle cx="222" cy="108" r="12" fill="#0a0a0a" stroke="#444"
+                                                stroke-width="1" />
+                                            <circle cx="222" cy="108" r="5" fill="#222"
+                                                stroke="rgba(200,255,0,0.4)" stroke-width="1" />
+                                            <line x1="222" y1="96" x2="222" y2="120"
+                                                stroke="#333" stroke-width="1.5" />
+                                            <line x1="210" y1="108" x2="234" y2="108"
+                                                stroke="#333" stroke-width="1.5" />
+                                            <line x1="32" y1="93" x2="268" y2="93"
+                                                stroke="rgba(200,255,0,0.12)" stroke-width="0.8" />
+                                        </svg>
+                                    @endif
+                                </div>
                             </div>
                             <div class="car-body">
                                 <div class="car-category">{{ $car->category->name }} · {{ $car['color'] }}</div>

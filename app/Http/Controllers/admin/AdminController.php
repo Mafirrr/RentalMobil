@@ -10,6 +10,7 @@ use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -62,6 +63,39 @@ class AdminController extends Controller
                 'daily_rate' => $request->daily_rate,
             ]);
 
+            $imagePositions = ['image_front', 'image_side', 'image_interior', 'image_engine'];
+            $uploadedImages = [];
+
+            foreach ($imagePositions as $position) {
+                if ($request->hasFile($position)) {
+                    switch ($position) {
+                        case 'image_front':
+                            $customName = 'foto_depan';
+                            break;
+                        case 'image_side':
+                            $customName = 'foto_samping';
+                            break;
+                        case 'image_interior':
+                            $customName = 'foto_interior';
+                            break;
+                        case 'image_engine':
+                            $customName = 'foto_mesin';
+                            break;
+                        default:
+                            $customName = $position;
+                    }
+                    $extension = $request->file($position)->getClientOriginalExtension();
+                    $fileName = $customName . '.' . $extension;
+                    $folderPath = 'vehicles/' . $vehicle->id;
+                    $path = $request->file($position)->storeAs($folderPath, $fileName, 'public');
+                    $uploadedImages[$position] = $path;
+                }
+            }
+
+            if (!empty($uploadedImages)) {
+                $vehicle->update($uploadedImages);
+            }
+
             if ($type === 'car') {
                 Car::create([
                     'vehicle_id' => $vehicle->id,
@@ -81,7 +115,6 @@ class AdminController extends Controller
             DB::commit();
             return redirect()->route('admin.vehicles')->with('success', 'Armada berhasil ditambahkan!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollback();
             return back()->with('error', $e->getMessage());
         }
@@ -91,7 +124,33 @@ class AdminController extends Controller
     {
         $vehicle = Vehicle::with(['car', 'motorcycle'])->findOrFail($id);
         $categories = Category::all();
-        return view('admin.cars.edit', compact('vehicle', 'categories'));
+
+        $images = [
+            'front'    => asset('images/placeholder.jpg'),
+            'side'     => asset('images/placeholder.jpg'),
+            'interior' => asset('images/placeholder.jpg'),
+            'engine'   => asset('images/placeholder.jpg'),
+        ];
+
+        $folderPath = 'vehicles/' . $id;
+
+        if (Storage::disk('public')->exists($folderPath)) {
+            $files = Storage::disk('public')->files($folderPath);
+            foreach ($files as $file) {
+                $fileName = basename($file);
+                if (Str::startsWith($fileName, 'foto_depan')) {
+                    $images['front'] = asset('storage/' . $file);
+                } elseif (Str::startsWith($fileName, 'foto_samping')) {
+                    $images['side'] = asset('storage/' . $file);
+                } elseif (Str::startsWith($fileName, 'foto_interior')) {
+                    $images['interior'] = asset('storage/' . $file);
+                } elseif (Str::startsWith($fileName, 'foto_mesin')) {
+                    $images['engine'] = asset('storage/' . $file);
+                }
+            }
+        }
+
+        return view('admin.cars.edit', compact('vehicle', 'categories', 'images'));
     }
 
     public function updateCar(Request $request, $id)
@@ -100,14 +159,47 @@ class AdminController extends Controller
 
         DB::beginTransaction();
         try {
-            $vehicle->update([
-                'category_id' => $request->category_id,
-                'model' => $request->model,
+            $vehicleData = [
+                'category_id'  => $request->category_id,
+                'model'        => $request->model,
                 'plate_number' => $request->plate_number,
-                'year' => $request->year ?? date('Y'),
-                'color' => $request->color ?? 'Hitam',
-                'daily_rate' => $request->daily_rate,
-            ]);
+                'year'         => $request->year ?? date('Y'),
+                'color'        => $request->color ?? 'Hitam',
+                'daily_rate'   => $request->daily_rate,
+            ];
+
+            $imagePositions = ['image_front', 'image_side', 'image_interior', 'image_engine'];
+
+            foreach ($imagePositions as $position) {
+                if ($request->hasFile($position)) {
+                    if ($vehicle->$position && Storage::disk('public')->exists($vehicle->$position)) {
+                        Storage::disk('public')->delete($vehicle->$position);
+                    }
+
+                    switch ($position) {
+                        case 'image_front':
+                            $customName = 'foto_depan';
+                            break;
+                        case 'image_side':
+                            $customName = 'foto_samping';
+                            break;
+                        case 'image_interior':
+                            $customName = 'foto_interior';
+                            break;
+                        case 'image_engine':
+                            $customName = 'foto_mesin';
+                            break;
+                        default:
+                            $customName = $position;
+                    }
+                    $extension = $request->file($position)->getClientOriginalExtension();
+                    $fileName = $customName . '.' . $extension;
+                    $folderPath = 'vehicles/' . $id;
+                    $path = $request->file($position)->storeAs($folderPath, $fileName, 'public');
+                    $vehicleData[$position] = $path;
+                }
+            }
+            $vehicle->update($vehicleData);
 
             if ($vehicle->vehicle_type === 'car') {
                 $vehicle->car()->update([
@@ -126,8 +218,8 @@ class AdminController extends Controller
             DB::commit();
             return redirect()->route('admin.vehicles')->with('success', 'Armada berhasil diupdate!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
             DB::rollback();
+            dd($e);
             return back()->with('error', $e->getMessage());
         }
     }

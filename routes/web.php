@@ -34,10 +34,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::prefix('rental')->group(function () {
         Route::get('/', [PenyewaController::class, 'index'])->name('admin.rentals');
-        Route::post('/add', [PenyewaController::class, 'store'])->name('admin.rentals.store');
         Route::put('/return/{id}', [PenyewaController::class, 'update'])->name('admin.rentals.return');
         Route::put('/{rental}/cancel', [PenyewaController::class, 'cancel'])->name('admin.rentals.cancel');
-        Route::get('/report', [PenyewaController::class, 'report'])->name('admin.report');
     });
 });
 

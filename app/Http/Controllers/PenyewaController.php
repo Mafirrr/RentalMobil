@@ -2,75 +2,80 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Rental;
+use App\Models\ReturnCar;
+use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PenyewaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $cars = Car::where('status', 'available')->get();
-        $recentRentals = Rental::where('status', 'ongoing')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('admin.rentals.index', compact('cars', 'recentRentals'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->merge([
-            'total_price' => $request->total_price ? str_replace('.', '', $request->total_price) : 0,
-            'amount_paid' => $request->amount_paid ? str_replace('.', '', $request->amount_paid) : 0,
-        ]);
-
-        $validated = $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'customer_phone' => 'required|string|max:20',
-            'customer_address' => 'nullable|string',
-            'car_id' => 'required|exists:cars,id',
-            'rental_date' => 'required|date',
-            'return_date_scheduled' => 'required|date|after:rental_date',
-            'total_price' => 'required|numeric|min:0',
-            'amount_paid' => 'nullable|numeric|min:0',
-            'admin_notes' => 'nullable|string',
-        ]);
-
-        Rental::create([
-            'customer_name' => $validated['customer_name'],
-            'customer_phone' => $validated['customer_phone'],
-            'customer_address' => $validated['customer_address'],
-            'car_id' => $validated['car_id'],
-            'rental_date' => $validated['rental_date'],
-            'return_date_scheduled' => $validated['return_date_scheduled'],
-            'total_price' => $validated['total_price'],
-            'amount_paid' => $request->amount_paid ?? 0,
-            'admin_notes' => $validated['admin_notes'],
-            'status' => 'ongoing',
-        ]);
-
-        return redirect()->back()->with('success', 'Data rental berhasil dicatat!');
+        $vehicles = Vehicle::query()->orderBy('model', 'asc')->get();
+        $query = Rental::with(['vehicle.car', 'vehicle.motorcycle', 'payment', 'user.userDetail'])
+            ->withSum(['payment as total_paid' => function ($q) {
+                $q->where('status', 'paid');
+            }], 'net_amount');
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->search . '%';
+            $query->whereHas('user.userDetail', function ($q) use ($searchTerm) {
+                $q->where('full_name', 'like', $searchTerm)
+                    ->orWhere('phone', 'like', $searchTerm);
+            });
+        }
+        if ($request->filled('vehicle_type')) {
+            $query->whereHas('vehicle', function ($q) use ($request) {
+                $q->where('vehicle_type', $request->vehicle_type);
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        $recentRentals = $query->orderBy('created_at', 'desc')->get()
+            ->map(function ($rental) {
+                $rental->remaining_payment = $rental->total_price - ($rental->total_paid ?? 0);
+                return $rental;
+            });
+        return view('admin.rentals.index', compact('vehicles', 'recentRentals'));
     }
 
     public function update(Request $request, $id)
     {
-        $rental = Rental::findOrFail($id);
+        $rental = Rental::with(['vehicle'])->findOrFail($id);
+        $returnDateActual = Carbon::parse($request->return_date);
+        $returnDateScheduled = Carbon::parse($rental->return_date_scheduled);
 
-        $request->validate([
-            'return_date_actual' => 'required|date',
-            'amount_paid' => 'required|numeric|min:0',
-            'admin_notes' => 'nullable|string'
+        $penalty = 0;
+
+        if ($returnDateActual->greaterThan($returnDateScheduled)) {
+            $lateDays = $returnDateActual->copy()->startOfDay()->diffInDays($returnDateScheduled->copy()->startOfDay(), true);
+            if ($lateDays == 0) {
+                $lateDays = 1;
+            }
+
+            if ($lateDays > 0) {
+                $dailyPrice = $rental->vehicle->daily_rate ?? 0;
+                $penaltyPerDay = $dailyPrice + ($dailyPrice * 0.10);
+                $penalty = $lateDays * $penaltyPerDay;
+                $rental->total_price += $penalty;
+                $rental->save();
+            }
+        }
+
+        ReturnCar::create([
+            'rental_id'       => $rental->id,
+            'return_date'     => Carbon::parse($request->return_date),
+            'car_condition'   => $request->car_condition ?? 'Good',
+            'payment_penalty' => $penalty,
+            'admin_notes'     => $request->admin_notes,
         ]);
 
         $rental->update([
-            'return_date_actual' => $request->return_date_actual,
-            'amount_paid' => $request->amount_paid,
-            'status' => 'completed',
-            'admin_notes' => $rental->admin_notes . "\n Catatan Kembali: " . $request->admin_notes,
+            'status' => 'completed'
         ]);
 
-        return redirect()->back()->with('success', 'Armada telah berhasil dikembalikan dan status diperbarui.');
+        return redirect()->back()->with('success', 'Unit berhasil dikembalikan.' . ($penalty > 0 ? ' Terkena denda keterlambatan sebesar Rp ' . number_format($penalty, 0, ',', '.') : ''));
     }
 
     public function cancel(Rental $rental)

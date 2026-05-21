@@ -56,25 +56,38 @@ class TripayCallbackController extends Controller
         DB::beginTransaction();
         try {
             if ($statusTripay === 'PAID') {
+                $hasPriorPaidPayments = Payment::where('rental_id', $payment->rental_id)
+                    ->where('status', 'paid')
+                    ->where('id', '!=', $payment->id)
+                    ->exists();
                 $payment->update(['status' => 'paid']);
-
                 $rental = Rental::find($payment->rental_id);
                 if ($rental) {
-                    $rental->update([
-                        'status' => 'ongoing',
-                        'amount_paid' => $payment->net_amount
-                    ]);
+                    if (!$hasPriorPaidPayments) {
+                        $rental->update([
+                            'status'      => 'ongoing',
+                            'amount_paid' => $payment->net_amount
+                        ]);
+                        Log::info("Webhook Tripay Sukses: Pembayaran Pertama (DP) LUNAS. Status Rental ID {$rental->id} menjadi 'ongoing'.");
+                    } else {
+                        Log::info("Webhook Tripay Sukses: Pembayaran Susulan (Pelunasan/Denda) LUNAS untuk Rental ID {$rental->id}. Status Rental tidak diubah.");
+                    }
                 }
-
-                Log::info("Webhook Tripay Sukses: Pembayaran ID {$payment->id} telah LUNAS.");
             } elseif (in_array($statusTripay, ['EXPIRED', 'FAILED'])) {
+                $hasPriorPaidPayments = Payment::where('rental_id', $payment->rental_id)
+                    ->where('status', 'paid')
+                    ->where('id', '!=', $payment->id)
+                    ->exists();
                 $payment->update(['status' => strtolower($statusTripay)]);
-
                 $rental = Rental::find($payment->rental_id);
                 if ($rental) {
-                    $rental->update(['status' => 'cancelled']);
+                    if (!$hasPriorPaidPayments) {
+                        $rental->update(['status' => 'cancelled']);
+                        Log::warning("Webhook Tripay: Pembayaran Utama GAGAL/EXPIRED. Status Rental ID {$rental->id} diubah menjadi 'cancelled'.");
+                    } else {
+                        Log::warning("Webhook Tripay: Pembayaran Tambahan ID {$payment->id} GAGAL/EXPIRED. Status Rental ID {$rental->id} tetap aman.");
+                    }
                 }
-                Log::warning("Webhook Tripay: Pembayaran ID {$payment->id} GAGAL/EXPIRED.");
             }
 
             DB::commit();

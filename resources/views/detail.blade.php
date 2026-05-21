@@ -811,80 +811,92 @@
             <span class="current">{{ $vehicle->model }}</span>
         </div>
 
-        {{-- MAIN GRID --}}
         <div class="grid">
-
-            {{-- LEFT: GALLERY --}}
             <div class="gallery">
-                <div class="main-image">
-                    <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg"
-                        style="position:absolute;inset:0;width:100%;height:100%;">
-                        <rect width="800" height="450" fill="#111115" />
-                        <ellipse cx="400" cy="380" rx="280" ry="18" fill="rgba(0,0,0,0.5)" />
-                        <rect x="110" y="220" width="580" height="130" rx="12" fill="#1a1a22" />
-                        <path d="M210,220 L260,140 L540,140 L590,220 Z" fill="#1e1e28" />
-                        <path d="M535,220 L560,155 L540,140 L490,220 Z" fill="#1e2a40" opacity="0.9" />
-                        <path d="M265,220 L260,140 L300,140 L310,220 Z" fill="#1e2a40" opacity="0.9" />
-                        <rect x="315" y="150" width="175" height="65" rx="4" fill="#1a2638" opacity="0.95" />
-                        <line x1="400" y1="150" x2="400" y2="350" stroke="rgba(255,255,255,0.04)"
-                            stroke-width="1" />
-                        <line x1="490" y1="150" x2="490" y2="350" stroke="rgba(255,255,255,0.04)"
-                            stroke-width="1" />
-                        <path d="M650,240 L690,248 L690,278 L650,285 Z" fill="#141419" />
-                        <path d="M655,248 L682,254 L682,272 L655,278 Z" fill="#c8ff00" opacity="0.7" />
-                        <rect x="655" y="290" width="40" height="30" rx="4" fill="#0e0e12" />
-                        <line x1="665" y1="295" x2="665" y2="315" stroke="#222228"
-                            stroke-width="1" />
-                        <line x1="675" y1="295" x2="675" y2="315" stroke="#222228"
-                            stroke-width="1" />
-                        <line x1="685" y1="295" x2="685" y2="315" stroke="#222228"
-                            stroke-width="1" />
-                        <path d="M110,255 L120,248 L120,285 L110,278 Z" fill="#141419" />
-                        <rect x="110" y="255" width="12" height="30" rx="2" fill="#cc2222" opacity="0.8" />
-                        <rect x="655" y="320" width="48" height="25" rx="6" fill="#0e1014" />
-                        <rect x="100" y="320" width="48" height="25" rx="6" fill="#0e1014" />
-                        <circle cx="230" cy="355" r="48" fill="#080809" />
-                        <circle cx="230" cy="355" r="42" fill="#141419" />
-                        <circle cx="230" cy="355" r="26" fill="#0e0e12" />
-                        <circle cx="230" cy="355" r="20" fill="#161620" />
-                        <line x1="230" y1="335" x2="230" y2="375" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="210" y1="355" x2="250" y2="355" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="216" y1="341" x2="244" y2="369" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="244" y1="341" x2="216" y2="369" stroke="#1e2030"
-                            stroke-width="3" />
-                        <circle cx="230" cy="355" r="6" fill="#c8ff00" opacity="0.4" />
-                        <circle cx="570" cy="355" r="48" fill="#080809" />
-                        <circle cx="570" cy="355" r="42" fill="#141419" />
-                        <circle cx="570" cy="355" r="26" fill="#0e0e12" />
-                        <circle cx="570" cy="355" r="20" fill="#161620" />
-                        <line x1="570" y1="335" x2="570" y2="375" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="550" y1="355" x2="590" y2="355" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="556" y1="341" x2="584" y2="369" stroke="#1e2030"
-                            stroke-width="3" />
-                        <line x1="584" y1="341" x2="556" y2="369" stroke="#1e2030"
-                            stroke-width="3" />
-                        <circle cx="570" cy="355" r="6" fill="#c8ff00" opacity="0.4" />
-                        <rect x="270" y="136" width="260" height="6" rx="3" fill="#222230" />
-                        <line x1="110" y1="295" x2="695" y2="295" stroke="rgba(200,255,0,0.12)"
-                            stroke-width="1.5" />
-                        <text x="400" y="418" text-anchor="middle" font-family="monospace" font-size="11"
-                            fill="rgba(255,255,255,0.1)" letter-spacing="6">FORTUNER VRZ 4×4</text>
-                    </svg>
-                    <div class="badge-status">{{ $vehicle->status }}</div>
-                    <div class="badge-year">{{ $vehicle->year }}</div>
+                <div class="image-gallery-wrapper">
+                    <div class="main-image"
+                        style="position: relative; width: 100%; aspect-ratio: 800 / 450; background: #111115; border-radius: 12px; overflow: hidden;">
+
+                        <img id="featuredImage" src="" alt="{{ $vehicle->model }}"
+                            style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2;">
+
+                        <svg id="placeholderSvg" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg"
+                            style="position:absolute;inset:0;width:100%;height:100%; z-index: 1;">
+                            <rect width="800" height="450" fill="#111115" />
+                            <ellipse cx="400" cy="380" rx="280" ry="18" fill="rgba(0,0,0,0.5)" />
+                            <rect x="110" y="220" width="580" height="130" rx="12" fill="#1a1a22" />
+                            <path d="M210,220 L260,140 L540,140 L590,220 Z" fill="#1e1e28" />
+                            <path d="M535,220 L560,155 L540,140 L490,220 Z" fill="#1e2a40" opacity="0.9" />
+                            <path d="M265,220 L260,140 L300,140 L310,220 Z" fill="#1e2a40" opacity="0.9" />
+                            <rect x="315" y="150" width="175" height="65" rx="4" fill="#1a2638"
+                                opacity="0.95" />
+                            <line x1="400" y1="150" x2="400" y2="350"
+                                stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+                            <line x1="490" y1="150" x2="490" y2="350"
+                                stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+                            <path d="M650,240 L690,248 L690,278 L650,285 Z" fill="#141419" />
+                            <path d="M655,248 L682,254 L682,272 L655,278 Z" fill="#c8ff00" opacity="0.7" />
+                            <rect x="655" y="290" width="40" height="30" rx="4" fill="#0e0e12" />
+                            <line x1="665" y1="295" x2="665" y2="315" stroke="#222228"
+                                stroke-width="1" />
+                            <line x1="675" y1="295" x2="675" y2="315" stroke="#222228"
+                                stroke-width="1" />
+                            <line x1="685" y1="295" x2="685" y2="315" stroke="#222228"
+                                stroke-width="1" />
+                            <path d="M110,255 L120,248 L120,285 L110,278 Z" fill="#141419" />
+                            <rect x="110" y="255" width="12" height="30" rx="2" fill="#cc2222"
+                                opacity="0.8" />
+                            <rect x="655" y="320" width="48" height="25" rx="6" fill="#0e1014" />
+                            <rect x="100" y="320" width="48" height="25" rx="6" fill="#0e1014" />
+                            <circle cx="230" cy="355" r="48" fill="#080809" />
+                            <circle cx="230" cy="355" r="42" fill="#141419" />
+                            <circle cx="230" cy="355" r="26" fill="#0e0e12" />
+                            <circle cx="230" cy="355" r="20" fill="#161620" />
+                            <line x1="230" y1="335" x2="230" y2="375" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="210" y1="355" x2="250" y2="355" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="216" y1="341" x2="244" y2="369" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="244" y1="341" x2="216" y2="369" stroke="#1e2030"
+                                stroke-width="3" />
+                            <circle cx="230" cy="355" r="6" fill="#c8ff00" opacity="0.4" />
+                            <circle cx="570" cy="355" r="48" fill="#080809" />
+                            <circle cx="570" cy="355" r="42" fill="#141419" />
+                            <circle cx="570" cy="355" r="26" fill="#0e0e12" />
+                            <circle cx="570" cy="355" r="20" fill="#161620" />
+                            <line x1="570" y1="335" x2="570" y2="375" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="550" y1="355" x2="590" y2="355" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="556" y1="341" x2="584" y2="369" stroke="#1e2030"
+                                stroke-width="3" />
+                            <line x1="584" y1="341" x2="556" y2="369" stroke="#1e2030"
+                                stroke-width="3" />
+                            <circle cx="570" cy="355" r="6" fill="#c8ff00" opacity="0.4" />
+                            <rect x="270" y="136" width="260" height="6" rx="3" fill="#222230" />
+                            <line x1="110" y1="295" x2="695" y2="295"
+                                stroke="rgba(200,255,0,0.12)" stroke-width="1.5" />
+                            <text x="400" y="418" text-anchor="middle" font-family="monospace" font-size="11"
+                                fill="rgba(255,255,255,0.1)" letter-spacing="6">
+                                {{ strtoupper($vehicle->model) }}
+                            </text>
+                        </svg>
+
+                        <div class="badge-status" style="position: absolute; top: 15px; left: 15px; z-index: 3;">
+                            {{ $vehicle->status }}</div>
+                        <div class="badge-year" style="position: absolute; top: 15px; right: 15px; z-index: 3;">
+                            {{ $vehicle->year }}</div>
+                    </div>
+
+                    <div class="thumbnails">
+                        <div class="thumb active" data-src="{{ $vehicle->images_gallery['samping'] }}">SAMPING</div>
+                        <div class="thumb" data-src="{{ $vehicle->images_gallery['depan'] }}">DEPAN</div>
+                        <div class="thumb" data-src="{{ $vehicle->images_gallery['interior'] }}">INTERIOR</div>
+                        <div class="thumb" data-src="{{ $vehicle->images_gallery['mesin'] }}">MESIN</div>
+                    </div>
                 </div>
 
-                <div class="thumbnails">
-                    <div class="thumb active">SAMPING</div>
-                    <div class="thumb">DEPAN</div>
-                    <div class="thumb">INTERIOR</div>
-                    <div class="thumb">MESIN</div>
-                </div>
             </div>
 
             <div class="info-panel">
@@ -1004,12 +1016,9 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
-
                 <hr class="divider">
 
-                {{-- DEALER --}}
                 <div class="dealer-card">
                     <div class="dealer-avatar">CS</div>
                     <div style="flex:1;">
@@ -1057,34 +1066,44 @@
             <div class="similar-grid">
                 @foreach ($similar_vehicles as $vehicle)
                     <a href="{{ route('detail', $vehicle->id) }}" class="similar-card">
-                        <div class="similar-img">
-                            <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
-                                style="width:100%;height:100%;">
-                                <rect width="300" height="200" fill="#111115" />
-                                <ellipse cx="150" cy="170" rx="120" ry="12"
-                                    fill="rgba(0,0,0,0.4)" />
-                                <rect x="30" y="100" width="240" height="65" rx="10" fill="#1a1a22" />
-                                <path d="M65,100 L82,68 L218,68 L235,100 Z" fill="#1e1e28" />
-                                <circle cx="75" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                    stroke-width="2" />
-                                <circle cx="75" cy="168" r="14" fill="#111115" />
-                                <circle cx="225" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
-                                    stroke-width="2" />
-                                <circle cx="225" cy="168" r="14" fill="#111115" />
-                            </svg>
+                        <div class="similar-img"
+                            style="position: relative; width: 100%; aspect-ratio: 300 / 200; overflow: hidden; background: #111115;">
+
+                            @if ($vehicle->image_front)
+                                <img src="{{ $vehicle->image_front }}" alt="{{ $vehicle->model }}"
+                                    style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 2;">
+                            @else
+                                <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"
+                                    style="width:100%;height:100%; position: absolute; inset: 0; z-index: 1;">
+                                    <rect width="300" height="200" fill="#111115" />
+                                    <ellipse cx="150" cy="170" rx="120" ry="12"
+                                        fill="rgba(0,0,0,0.4)" />
+                                    <rect x="30" y="100" width="240" height="65" rx="10" fill="#1a1a22" />
+                                    <path d="M65,100 L82,68 L218,68 L235,100 Z" fill="#1e1e28" />
+                                    <circle cx="75" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
+                                        stroke-width="2" />
+                                    <circle cx="75" cy="168" r="14" fill="#111115" />
+                                    <circle cx="225" cy="168" r="22" fill="#0a0a0c" stroke="#222230"
+                                        stroke-width="2" />
+                                    <circle cx="225" cy="168" r="14" fill="#111115" />
+                                </svg>
+                            @endif
+
                         </div>
                         <div class="similar-info">
                             <div class="similar-name">{{ $vehicle->model }}</div>
                             <div class="similar-price">Rp {{ number_format($vehicle->daily_rate, 0, ',', '.') }} / hari
                             </div>
+
                             @if ($vehicle->vehicle_type == 'car')
-                                <div class="similar-meta">{{ $vehicle->category->name }} · {{ $vehicle->car->capacity }}
-                                    Kursi ·
-                                    {{ $vehicle->car->fuel_type }}</div>
+                                <div class="similar-meta">
+                                    {{ $vehicle->category->name }} · {{ $vehicle->car->capacity ?? 0 }} Kursi ·
+                                    {{ $vehicle->car->fuel_type ?? '-' }}
+                                </div>
                             @else
-                                <div class="similar-meta">{{ $vehicle->category->name }} ·
-                                    {{ $vehicle->motorcycle->engine_capacity }}
-                                    CC</div>
+                                <div class="similar-meta">
+                                    {{ $vehicle->category->name }} · {{ $vehicle->motorcycle->engine_capacity ?? 0 }} CC
+                                </div>
                             @endif
                         </div>
                     </a>
@@ -1135,83 +1154,104 @@
             btn.classList.add('active');
         }
 
-        document.querySelectorAll('.thumb').forEach(t => {
-            t.addEventListener('click', () => {
-                document.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
-                t.classList.add('active');
-            });
-        });
-
         document.addEventListener('DOMContentLoaded', function() {
-            const saveBtn = document.getElementById('saveBtn');
+            const thumbs = document.querySelectorAll('.thumb');
+            const featuredImage = document.getElementById('featuredImage');
+            const placeholderSvg = document.getElementById('placeholderSvg');
 
-            saveBtn.addEventListener('click', function() {
-                const vehicleId = this.getAttribute('data-id');
-                const icon = this.querySelector('i');
+            function changeMainImage(element) {
+                const imageSrc = element.getAttribute('data-src');
+                thumbs.forEach(x => x.classList.remove('active'));
+                element.classList.add('active');
+                if (imageSrc && imageSrc.trim() !== "") {
+                    featuredImage.src = imageSrc;
+                    featuredImage.style.display = "block";
+                } else {
+                    featuredImage.style.display = "none";
+                }
+            }
 
-                fetch(`/vehicle/${vehicleId}/wishlist`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        }
-                    })
-                    .then(response => {
-                        if (response.status === 401) {
-                            const loginModal = new bootstrap.Modal(document.getElementById(
-                                'loginAlertModal'));
-                            loginModal.show();
-                            return;
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (!data) return;
-
-                        if (data.status === 'added') {
-                            this.classList.add('saved');
-                            icon.classList.replace('bi-heart', 'bi-heart-fill');
-                        } else if (data.status === 'removed') {
-                            this.classList.remove('saved');
-                            icon.classList.replace('bi-heart-fill', 'bi-heart');
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
+            thumbs.forEach(t => {
+                t.addEventListener('click', function() {
+                    changeMainImage(this);
+                });
             });
+
+            const initialActiveThumb = document.querySelector('.thumb.active');
+            if (initialActiveThumb) {
+                changeMainImage(initialActiveThumb);
+            }
+            const saveBtn = document.getElementById('saveBtn');
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    const vehicleId = this.getAttribute('data-id');
+                    const icon = this.querySelector('i');
+
+                    fetch(`/vehicle/${vehicleId}/wishlist`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(response => {
+                            if (response.status === 401) {
+                                const loginModal = new bootstrap.Modal(document.getElementById(
+                                    'loginAlertModal'));
+                                loginModal.show();
+                                return;
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data) return;
+
+                            if (data.status === 'added') {
+                                this.classList.add('saved');
+                                icon.classList.replace('bi-heart', 'bi-heart-fill');
+                            } else if (data.status === 'removed') {
+                                this.classList.remove('saved');
+                                icon.classList.replace('bi-heart-fill', 'bi-heart');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                });
+            }
 
             const shareBtn = document.getElementById('shareBtn');
-
-            shareBtn.addEventListener('click', function() {
-                const title = this.getAttribute('data-title');
-                const url = this.getAttribute('data-url');
-
-                if (navigator.share) {
-                    navigator.share({
-                            title: title,
-                            text: 'Cek kendaraan keren ini di CAPSTONE Rental!',
-                            url: url
-                        })
-                        .then(() => console.log('Berhasil membagikan!'))
-                        .catch((error) => console.log('Gagal membagikan:', error));
-                } else {
-                    navigator.clipboard.writeText(url);
-                    alert('Link berhasil disalin ke clipboard! Siap dibagikan.');
-                }
-            });
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    const title = this.getAttribute('data-title');
+                    const url = this.getAttribute('data-url');
+                    if (navigator.share) {
+                        navigator.share({
+                                title: title,
+                                text: 'Cek kendaraan keren ini di CAPSTONE Rental!',
+                                url: url
+                            })
+                            .then(() => console.log('Berhasil membagikan!'))
+                            .catch((error) => console.log('Gagal membagikan:', error));
+                    } else {
+                        navigator.clipboard.writeText(url);
+                        alert('Link berhasil disalin ke clipboard! Siap dibagikan.');
+                    }
+                });
+            }
 
             const bookingForm = document.getElementById('bookingForm');
             const bookingBtn = document.getElementById('bookingBtn');
+            if (bookingForm && bookingBtn) {
+                bookingForm.addEventListener('submit', function(e) {
+                    const isAuthorized = bookingBtn.getAttribute('data-auth') === 'true';
 
-            bookingForm.addEventListener('submit', function(e) {
-                const isAuthorized = bookingBtn.getAttribute('data-auth') === 'true';
-
-                if (!isAuthorized) {
-                    e.preventDefault();
-                    const loginModal = new bootstrap.Modal(document.getElementById('loginAlertModal'));
-                    loginModal.show();
-                }
-            });
+                    if (!isAuthorized) {
+                        e.preventDefault();
+                        const loginModal = new bootstrap.Modal(document.getElementById('loginAlertModal'));
+                        loginModal.show();
+                    }
+                });
+            }
         });
     </script>
 @endpush
