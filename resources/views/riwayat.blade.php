@@ -833,9 +833,47 @@
         .col {
             color: #495057;
         }
+
+        .star-rating-wrapper {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: center;
+        }
+
+        .star-rating-wrapper input:checked~label,
+        .star-rating-wrapper label:hover,
+        .star-rating-wrapper label:hover~label {
+            font-weight: bold;
+        }
+
+        .star-rating-wrapper input:checked~label::before,
+        .star-rating-wrapper label:hover::before,
+        .star-rating-wrapper label:hover~label::before {
+            content: "\f586";
+        }
     </style>
 @endpush
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i> {{ session('warning') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <form action="{{ route('riwayat') }}" method="GET" id="filterForm">
         <div class="filter-bar">
@@ -1119,6 +1157,61 @@
                             </div>
                         </div>
                     </div>
+
+                    @if ($remaining <= 0 && $booking->status == 'completed')
+                        <div class="modal fade" id="ratingModal{{ $booking->id }}" tabindex="-1"
+                            aria-labelledby="ratingModalLabel{{ $booking->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content text-dark">
+                                    <div class="modal-header">
+                                        <div>
+                                            <small class="text-muted d-block text-start">Ulasan Pengalaman Rental</small>
+                                            <h5 class="modal-title fw-bold text-dark"
+                                                id="ratingModalLabel{{ $booking->id }}">
+                                                Transaksi #{{ $booking->merchant_ref }}
+                                            </h5>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+
+                                    <form action="{{ route('rating.store') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="rental_id" value="{{ $booking->id }}">
+                                        <div class="modal-body text-start">
+                                            <div class="text-center mb-4">
+                                                <p class="text-secondary mb-2">Bagaimana kualitas unit dan pelayanan armada
+                                                    kami?</p>
+                                                <div
+                                                    class="star-rating-wrapper fs-2 text-warning d-flex justify-content-center gap-2">
+                                                    @for ($i = 5; $i >= 1; $i--)
+                                                        <input type="radio" class="btn-check" name="rating"
+                                                            id="star{{ $i }}_{{ $booking->id }}"
+                                                            value="{{ $i }}" {{ $i == 5 ? 'checked' : '' }}>
+                                                        <label for="star{{ $i }}_{{ $booking->id }}"
+                                                            class="bi bi-star" style="cursor: pointer;"></label>
+                                                    @endfor
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold small text-dark mb-1">Komentar / Catatan
+                                                    Tambahan</label>
+                                                <textarea name="comment" class="form-control" rows="3"
+                                                    placeholder="Ceritakan pengalaman Anda menggunakan unit kendaraan ini..." required></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer border-0 pt-0">
+                                            <button type="button" class="btn btn-light px-4"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-warning px-4 fw-bold text-dark">KIRIM
+                                                RATING</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @endforeach
             @else
                 <div class="empty-state" id="emptyState">
@@ -1189,6 +1282,7 @@
                         });
                         const result = await response.json();
                         if (!response.ok || !result.success) {
+                            console.log(result.detail)
                             throw new Error(result.message ||
                                 'Gagal membuat tagihan pembayaran.');
                         }
@@ -1301,7 +1395,8 @@
                         const result = await response.json();
 
                         if (!response.ok || !result.success) {
-                            throw new Error(result.message ||
+                            console.log(result.detail);
+                            throw new Error(result.detail ||
                                 'Gagal menyimpan data pelunasan ke database.');
                         }
 

@@ -20,16 +20,10 @@ class RentalObserver
      */
     public function updated(Rental $rental): void
     {
-        if ($rental->isDirty('status') && $rental->status === 'ongoing') {
-            $today = Carbon::today();
-            $rentalDate = Carbon::parse($rental->rental_date)->startOfDay();
-            if ($rentalDate->equalTo($today)) {
-                $vehicle = $rental->vehicle;
-                if ($vehicle) {
-                    $vehicle->update([
-                        'status' => 'rented'
-                    ]);
-                }
+        if ($rental->isDirty('status') && $rental->status === 'cancelled') {
+            $vehicle = $rental->vehicle;
+            if ($vehicle && $vehicle->status === 'rented') {
+                $vehicle->update(['status' => 'available']);
             }
         }
     }

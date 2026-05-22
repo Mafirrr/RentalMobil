@@ -192,9 +192,23 @@
                 BAYAR SISA <i class="bi bi-arrow-right"></i>
             </button>
         @else
-            <div class="payment-success-info mt-3 text-success">
+            <div class="payment-success-info mt-3 text-success mb-2">
                 <i class="bi bi-patch-check-fill"></i> Pembayaran Telah Lunas
             </div>
+            @if ($booking->status == 'completed')
+                @if ($booking->rating)
+                    <div class="alert alert-secondary text-center py-2 fw-bold small mt-1 mb-0 border-0 shadow-sm"
+                        style="color: #6c757d; background-color: #f8f9fa;">
+                        <i class="bi bi-check2-all text-success me-1"></i> Anda Telah Mengulas Transaksi Ini
+                    </div>
+                @else
+                    <button type="button" class="btn btn-warning w-100 py-2 fw-bold text-dark mt-1"
+                        data-bs-toggle="modal" data-bs-target="#ratingModal{{ $booking->id }}">
+                        <i class="bi bi-star-fill me-1"></i> BERIKAN ULASAN & RATING
+                    </button>
+                @endif
+
+            @endif
         @endif
     </div>
 </div>

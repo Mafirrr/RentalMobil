@@ -19,8 +19,24 @@ class PaymentController extends Controller
     {
         $user = User::with(['userDetail'])->findOrFail(Auth::id());
         $vehicle = Vehicle::with(['car', 'motorcycle', 'category'])->findOrFail($request->vehicle_id);
+        $existingRentals = Rental::where('vehicle_id', $vehicle->id)
+            ->where('status', 'ongoing')
+            ->get(['rental_date', 'return_date_scheduled']);
 
-        return view('pembayaran', compact('user', 'vehicle'));
+        $bookedDates = [];
+        foreach ($existingRentals as $rental) {
+            $start = Carbon::parse($rental->rental_date);
+            $end = Carbon::parse($rental->return_date_scheduled);
+
+            while ($start->lte($end)) {
+                $bookedDates[] = $start->format('Y-m-d');
+                $start->addDay();
+            }
+        }
+
+        $bookedDates = array_values(array_unique($bookedDates));
+
+        return view('pembayaran', compact('user', 'vehicle', 'bookedDates'));
     }
 
     public function generateTripayPayment(Request $request)
@@ -74,14 +90,28 @@ class PaymentController extends Controller
 
         $amount = ($totalHargaSewa * 10) / 100;
         $amount = $amount < 20000 ? 20000 : $amount;
-        $amount = (int) ceil($amount);
 
         if ($request->filled('remaining')) {
-            $amount = $request->remaining;
+            $sanitizeInput = str_replace(',', '.', $request->remaining);
+            $cleanRemaining = preg_replace('/[^0-9.]/', '', $sanitizeInput);
+            if (substr_count($cleanRemaining, '.') > 1) {
+                $cleanRemaining = str_replace('.', '', substr($cleanRemaining, 0, strrpos($cleanRemaining, '.'))) . substr($cleanRemaining, strrpos($cleanRemaining, '.'));
+            }
+
+            $amount = floor((float) $cleanRemaining);
         }
 
-        $signature = hash_hmac('sha256', $merchantCode . $merchantRef . $amount, $privateKey);
+        $amount = (int) ceil((float) $amount);
+        $amountString = number_format($amount, 0, '', '');
 
+        if ($amount > 10000000 && in_array($request->method, ['QRIS', 'OVO', 'DANA', 'LINKAJA', 'SHOPEEPAY'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nominal transaksi (Rp ' . number_format($amount, 0, ',', '.') . ') melebihi batas maksimal metode instan. Silakan gunakan Transfer Virtual Account (VA).'
+            ], 400);
+        }
+
+        $signature = hash_hmac('sha256', $merchantCode . $merchantRef . $amountString, $privateKey);
         $payload = [
             'method'         => $request->method,
             'merchant_ref'   => $merchantRef,

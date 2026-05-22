@@ -11,6 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <style>
         :root {
@@ -1114,8 +1115,9 @@
                                 <label class="form-label-cap">Alamat Penjemputan <span>*</span></label>
                                 <div class="input-group-cap">
                                     <i class="bi bi-geo-alt input-icon" style="top:14px;transform:none;"></i>
-                                    <textarea class="form-control-cap" rows="2" placeholder="Masukkan alamat lengkap untuk pengantaran kendaraan..."
-                                        id="alamatInput" style="padding-left:40px;resize:none;"></textarea>
+                                    <textarea class="form-control-cap" rows="2"
+                                        placeholder="Masukkan alamat lengkap untuk pengantaran kendaraan..." id="alamatInput"
+                                        style="padding-left:40px;resize:none;"></textarea>
                                 </div>
                                 <div class="char-counter"><span id="charCount">0</span>/200</div>
                             </div>
@@ -1473,6 +1475,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         const fadeEls = document.querySelectorAll('.fade-up');
         const obs = new IntersectionObserver(entries => {
@@ -1508,6 +1511,8 @@
 
         const BASE_RATE = {{ $vehicle->daily_rate ?? 0 }};
 
+        const BOOKED_DATES = @json($bookedDates ?? []);
+
         let no_va = 0;
         let totalPayment = 0;
         let totalDays = 0;
@@ -1515,16 +1520,60 @@
         let deliveryFee = 0;
         let methodUse = 'briva';
 
+        function isDateRangeOverlapping(start, end) {
+            if (!start || !end) return false;
+
+            let currentDate = new Date(start);
+            const endDate = new Date(end);
+
+            while (currentDate <= endDate) {
+                const formattedDate = currentDate.toISOString().split('T')[0];
+                if (BOOKED_DATES.includes(formattedDate)) {
+                    return true;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return false;
+        }
+
         const today = new Date().toISOString().split('T')[0];
         startD.min = today;
         endD.min = today;
 
-        startD.addEventListener('change', () => {
-            endD.min = startD.value;
-            updateSummary();
+
+        const flatpickrConfig = {
+            locale: "id",
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            disable: BOOKED_DATES
+        };
+
+        const startPicker = flatpickr("#startDate", {
+            ...flatpickrConfig,
+            onChange: function(selectedDates, dateStr) {
+                if (selectedDates[0]) {
+                    endPicker.set("minDate", dateStr);
+                }
+                updateSummary();
+            }
         });
-        endD.addEventListener('change', updateSummary);
-        selectLokasi.addEventListener('change', updateSummary);
+
+        const endPicker = flatpickr("#endDate", {
+            ...flatpickrConfig,
+            onChange: function(selectedDates, dateStr) {
+                if (startPicker.selectedDates[0] && isDateRangeOverlapping(startPicker.input.value, dateStr)) {
+                    alert('Rentang tanggal yang Anda pilih melewati tanggal yang sudah dipesan orang lain.');
+                    endPicker.clear();
+                }
+                updateSummary();
+            }
+        });
+
+        if (selectLokasi) {
+            selectLokasi.addEventListener('change', () => {
+                updateSummary();
+            });
+        }
 
         function formatRupiah(num) {
             return 'Rp ' + num.toLocaleString('id-ID');
@@ -1682,6 +1731,8 @@
             const selectedMethod = document.querySelector('input[name="paymethod"]:checked');
             const isTripayReady = window.currentTripayReference !== null && window.currentTripayReference !== undefined;
 
+            const isDateValid = totalDays > 0 && !isDateRangeOverlapping(startD.value, endD.value);
+
             const btnBayar = document.getElementById('btnBayar');
             if (!btnBayar) return;
 
@@ -1692,6 +1743,7 @@
                 email &&
                 alamat &&
                 totalDays > 0 &&
+                isDateValid &&
                 tnc1 &&
                 tnc2 &&
                 tnc3 &&

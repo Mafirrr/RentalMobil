@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Category;
 use App\Models\Motorcycle;
+use App\Models\Rating;
+use App\Models\Rental;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,11 +17,91 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.dashboard');
-    }
+        $totalArmada = Vehicle::count();
 
+        $penyewaAktif = Rental::where('status', 'ongoing')->distinct('user_id')->count('user_id');
+
+        $pendapatanCompleted = Rental::where('status', 'completed')->sum('amount_paid');
+
+        $pendapatanOngoing = Rental::where('rentals.status', 'ongoing')
+            ->join('payments', 'rentals.id', '=', 'payments.rental_id')
+            ->where('payments.status', 'paid')
+            ->sum('payments.net_amount');
+
+        $totalPendapatan = $pendapatanCompleted + $pendapatanOngoing;
+        $ratingRataRata = Rating::avg('rating') ?? 0.0;
+        $totalUlasan = Rating::count();
+
+        $availableMonths = Rental::select(
+            DB::raw('MONTH(rental_date) as month'),
+            DB::raw('YEAR(rental_date) as year')
+        )
+            ->groupBy('year', 'month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $date = Carbon::createFromDate($item->year, $item->month, 1)->locale('id');
+                return [
+                    'value' => $date->format('Y-m'),
+                    'label' => $date->monthName . ' ' . $item->year
+                ];
+            });
+
+        $defaultMonthValue = $availableMonths->first()['value'] ?? Carbon::now()->format('Y-m');
+        $selectedMonthValue = $request->get('month', $defaultMonthValue);
+
+        if (!str_contains($selectedMonthValue, '-')) {
+            try {
+                $parseMonth = Carbon::parse("1 " . $selectedMonthValue)->locale('id');
+                $monthNumber = $parseMonth->month;
+                $yearNumber = Carbon::now()->year;
+                $selectedMonthValue = $yearNumber . '-' . str_pad($monthNumber, 2, '0', STR_PAD_LEFT);
+            } catch (\Exception $e) {
+                $monthNumber = Carbon::now()->month;
+                $yearNumber = Carbon::now()->year;
+            }
+        } else {
+            $parts = explode('-', $selectedMonthValue);
+            $yearNumber = (int)$parts[0];
+            $monthNumber = (int)$parts[1];
+        }
+
+        $daysInMonth = Carbon::createFromDate($yearNumber, $monthNumber, 1)->daysInMonth;
+
+        $rentalDailyData = Rental::select(
+            DB::raw('DAY(rental_date) as day'),
+            DB::raw('COUNT(*) as total')
+        )
+            ->whereIn('status', ['ongoing', 'completed'])
+            ->whereMonth('rental_date', $monthNumber)
+            ->whereYear('rental_date', $yearNumber)
+            ->groupBy('day')
+            ->pluck('total', 'day')
+            ->toArray();
+
+
+        $chartLabels = [];
+        $chartData = [];
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $chartLabels[] = "Tgl $day";
+            $chartData[] = $rentalDailyData[$day] ?? 0;
+        }
+
+        return view('admin.dashboard', compact(
+            'totalArmada',
+            'penyewaAktif',
+            'totalPendapatan',
+            'ratingRataRata',
+            'totalUlasan',
+            'chartLabels',
+            'chartData',
+            'availableMonths',
+            'selectedMonthValue'
+        ));
+    }
     public function vehicles(Request $request)
     {
         $query = Vehicle::query()->with(['car', 'motorcycle']);

@@ -2,55 +2,78 @@
 
 @section('admin_content')
     <div class="row g-4 mb-4">
+        <!-- Total Armada -->
         <div class="col-md-3">
             <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="small text-secondary">Total Armada</span>
                     <div class="stat-icon bg-primary bg-opacity-10"><i class="bi bi-car-front text-primary fs-5"></i></div>
                 </div>
-                <h3 class="fw-bold mb-1">10,293</h3>
+                <h3 class="fw-bold mb-1">{{ number_format($totalArmada, 0, ',', '.') }}</h3>
                 <p class="text-secondary small mb-0">Total unit terdaftar</p>
             </div>
         </div>
+
+        <!-- Penyewa Aktif -->
         <div class="col-md-3">
             <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="small text-secondary">Penyewa Aktif</span>
                     <div class="stat-icon bg-warning bg-opacity-10"><i class="bi bi-person text-warning fs-5"></i></div>
                 </div>
-                <h3 class="fw-bold mb-1">40,689</h3>
-                <p class="text-secondary small mb-0">Total pelanggan unik</p>
+                <h3 class="fw-bold mb-1">{{ number_format($penyewaAktif, 0, ',', '.') }}</h3>
+                <p class="text-secondary small mb-0">Reservasi atau Digunakan</p>
             </div>
         </div>
+
+        <!-- Pendapatan -->
         <div class="col-md-3">
             <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="small text-secondary">Pendapatan</span>
                     <div class="stat-icon bg-success bg-opacity-10"><i class="bi bi-wallet2 text-success fs-5"></i></div>
                 </div>
-                <h3 class="fw-bold mb-1">Rp 89.0M</h3>
-                <p class="text-secondary small mb-0">Pendapatan kotor</p>
+                <h3 class="fw-bold mb-1">
+                    @if ($totalPendapatan >= 1000000000)
+                        Rp {{ number_format($totalPendapatan / 1000000000, 1, ',', '.') }}M
+                    @elseif($totalPendapatan >= 1000000)
+                        Rp {{ number_format($totalPendapatan / 1000000, 1, ',', '.') }}Jt
+                    @else
+                        Rp {{ number_format($totalPendapatan, 0, ',', '.') }}
+                    @endif
+                </h3>
+                <p class="text-secondary small mb-0">Pendapatan kotor sah</p>
             </div>
         </div>
+
+        <!-- Rating -->
         <div class="col-md-3">
             <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="small text-secondary">Rating Rata-rata</span>
                     <div class="stat-icon bg-danger bg-opacity-10"><i class="bi bi-star text-danger fs-5"></i></div>
                 </div>
-                <h3 class="fw-bold mb-1">4.9/5</h3>
-                <p class="text-secondary small mb-0">2,040 Ulasan total</p>
+                <h3 class="fw-bold mb-1">{{ number_format($ratingRataRata, 1, '.', ',') }}/5</h3>
+                <p class="text-secondary small mb-0">{{ number_format($totalUlasan, 0, ',', '.') }} Ulasan total</p>
             </div>
         </div>
     </div>
 
+    <!-- Grafik Section -->
     <div class="stat-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h5 class="fw-bold">Statistik Penyewaan</h5>
-            <select class="form-select form-select-sm bg-dark text-white border-secondary w-auto">
-                <option>Oktober</option>
-                <option>September</option>
-            </select>
+            <form action="{{ url()->current() }}" method="GET" id="monthFilterForm">
+                <select name="month" class="form-select form-select-sm bg-dark text-white border-secondary w-auto"
+                    onchange="document.getElementById('monthFilterForm').submit();">
+                    @foreach ($availableMonths as $month)
+                        <option value="{{ $month['value'] }}"
+                            {{ $selectedMonthValue == $month['value'] ? 'selected' : '' }}>
+                            {{ $month['label'] }}
+                        </option>
+                    @endforeach
+                </select>
+            </form>
         </div>
         <canvas id="salesChart" height="100"></canvas>
     </div>
@@ -59,13 +82,17 @@
 @push('scripts')
     <script>
         const ctx = document.getElementById('salesChart').getContext('2d');
+
+        const chartLabels = {!! json_encode($chartLabels) !!};
+        const chartData = {!! json_encode($chartData) !!};
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['1k', '5k', '10k', '15k', '20k', '25k', '30k', '35k', '40k', '45k', '50k', '55k', '60k'],
+                labels: chartLabels,
                 datasets: [{
                     label: 'Sewa Aktif',
-                    data: [25, 30, 45, 38, 52, 85, 40, 50, 62, 30, 75, 68, 55],
+                    data: chartData,
                     borderColor: '#facc15',
                     backgroundColor: 'rgba(250, 204, 21, 0.1)',
                     fill: true,
@@ -80,15 +107,24 @@
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.parsed.y} Transaksi`;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
+                        beginAtZero: true,
                         grid: {
                             color: 'rgba(255,255,255,0.05)'
                         },
                         ticks: {
-                            color: '#8a8a8a'
+                            color: '#8a8a8a',
+                            stepSize: 1
                         }
                     },
                     x: {

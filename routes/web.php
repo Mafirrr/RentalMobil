@@ -8,7 +8,27 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PenyewaController;
 use App\Http\Controllers\WishlistController;
+use App\Models\Rental;
+use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schedule;
+
+Schedule::call(function () {
+    $today = Carbon::today()->toDateString();
+    $rentedVehicleIds = Rental::where('status', 'ongoing')
+        ->whereDate('rental_date', '<=', $today)
+        ->whereDate('return_date_scheduled', '>=', $today)
+        ->pluck('vehicle_id');
+
+    Vehicle::whereNotIn('id', $rentedVehicleIds)
+        ->where('status', '!=', 'available')
+        ->update(['status' => 'available']);
+
+    Vehicle::whereIn('id', $rentedVehicleIds)
+        ->where('status', '!=', 'rented')
+        ->update(['status' => 'rented']);
+})->daily();
 
 Route::get('/',  [LandingController::class, 'index'])->name('landing');
 
@@ -54,4 +74,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals/store', [PaymentController::class, 'store']);
     Route::get('/wishlist', [LandingController::class, 'wishlist'])->name('wishlist');
     Route::get('/pesanan', [LandingController::class, 'riwayat'])->name('riwayat');
+    Route::post('/rating', [RentalController::class, 'rating'])->name('rating.store');
 });

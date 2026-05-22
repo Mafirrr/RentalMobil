@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Car;
+use App\Models\Rating;
 use App\Models\Rental;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -44,5 +45,44 @@ class RentalController extends Controller
         $car->update(['status' => 'rented']);
 
         return redirect()->route('customer.bookings')->with('success', 'Pemesanan berhasil! Silakan lakukan pembayaran.');
+    }
+
+    public function rating(Request $request)
+    {
+        $request->validate([
+            'rental_id' => 'required|integer',
+            'rating'    => 'required|integer|between:1,5',
+            'comment'   => 'required|string|max:500',
+        ], [
+            'rating.required'  => 'Anda wajib memilih jumlah bintang.',
+            'comment.required' => 'Komentar ulasan tidak boleh kosong.',
+            'comment.max'      => 'Ulasan terlalu panjang, maksimal 500 karakter.'
+        ]);
+        $rental = Rental::find($request->rental_id);
+
+        if (!$rental) {
+            return redirect()->back()->with('error', 'Data transaksi tidak ditemukan.');
+        }
+        if ($rental->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengulas transaksi ini.');
+        }
+        if ($rental->status !== 'completed' || $rental->remaining_amount > 0) {
+            return redirect()->back()->with('error', 'Anda hanya bisa memberikan ulasan pada transaksi yang sudah selesai dan lunas.');
+        }
+        $alreadyReviewed = Rating::where('rental_id', $request->rental_id)->exists();
+        if ($alreadyReviewed) {
+            return redirect()->back()->with('warning', 'Anda sudah memberikan ulasan untuk transaksi ini sebelumnya.');
+        }
+        try {
+            Rating::create([
+                'rental_id' => $request->rental_id,
+                'rating'    => $request->rating,
+                'comment'   => strip_tags($request->comment),
+            ]);
+
+            return redirect()->back()->with('success', 'Terima kasih! Ulasan Anda berhasil dikirim.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengirim ulasan. Silakan coba beberapa saat lagi.');
+        }
     }
 }
