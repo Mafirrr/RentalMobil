@@ -18,6 +18,7 @@ class Rental extends Model
      */
     protected $fillable = [
         'user_id',
+        'driver_id',
         'merchant_ref',
         'NIK',
         'vehicle_id',
@@ -29,6 +30,7 @@ class Rental extends Model
         'total_price',
         'amount_paid',
         'status',
+        'with_driver',
     ];
 
     /**
@@ -48,6 +50,10 @@ class Rental extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class);
     }
 
     /**

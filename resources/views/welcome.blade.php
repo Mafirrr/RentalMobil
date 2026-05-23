@@ -1038,12 +1038,10 @@
                                 <div class="car-img-container"
                                     style="width: 100%; aspect-ratio: 300 / 130; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                                     @if (isset($car->images_data['front']) && $car->images_data['front'] !== null)
-                                        {{-- FOTO UTUH: Mengikuti ukuran kontainer aspek rasio secara presisi --}}
                                         <img class="car-img" src="{{ $car->images_data['front'] }}"
                                             alt="{{ $car->model }}"
                                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                                     @else
-                                        {{-- SVG DEFAULT: Mengisi penuh kontainer dengan aspek rasio yang sama --}}
                                         <svg class="car-img" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg"
                                             style="width: 100%; height: 100%; border-radius: 8px;">
                                             <defs>

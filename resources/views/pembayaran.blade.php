@@ -1169,6 +1169,14 @@
                                 <textarea class="form-control-cap" rows="2"
                                     placeholder="Permintaan khusus, kondisi yang perlu diketahui, dsb..." style="resize:none;"></textarea>
                             </div>
+                            <div class="form-group mb-3">
+                                <label class="form-label-cap font-weight-bold">Layanan Driver</label>
+                                <select name="driver_service" id="driverService" class="form-control-cap"
+                                    onchange="updateSummary()">
+                                    <option value="0">Tanpa Driver (Lepas Kunci)</option>
+                                    <option value="1">Dengan Driver (+Rp 50.000 / Hari)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -1314,11 +1322,9 @@
                 {{-- ── RIGHT COLUMN: ORDER SUMMARY ── --}}
                 <div class="col-lg-5 fade-up" style="transition-delay:0.15s">
                     <div class="order-summary">
-
                         <div class="os-header">
                             <div class="os-title">RINGKASAN PESANAN</div>
                         </div>
-
                         {{-- Vehicle --}}
                         <div class="os-vehicle-card">
                             <div class="os-vehicle-img">
@@ -1394,6 +1400,10 @@
                             <div class="pb-row" id="pb-delivery-row" style="display:none;">
                                 <div class="pb-label">Biaya antar</div>
                                 <div class="pb-value">Rp 50.000</div>
+                            </div>
+                            <div class="pb-row" id="pb-driver-row" style="display:none;">
+                                <div class="pb-label">Biaya driver</div>
+                                <div class="pb-value" id="pbDriver"></div>
                             </div>
                             <div class="pb-row" id="pb-promo-row" style="display:none;">
                                 <div class="pb-label">Diskon promo <span class="pb-badge"
@@ -1519,6 +1529,8 @@
         let promoDiscount = 0;
         let deliveryFee = 0;
         let methodUse = 'briva';
+        let driverFeePerDay = 50000;
+        let totalDriverFee = 0;
 
         function isDateRangeOverlapping(start, end) {
             if (!start || !end) return false;
@@ -1579,6 +1591,7 @@
             return 'Rp ' + num.toLocaleString('id-ID');
         }
 
+
         function updateSummary() {
             const s = startD.value;
             const e = endD.value;
@@ -1603,23 +1616,31 @@
             document.getElementById('totalDays').innerText = `${totalDays} hari`;
 
             const totalBasePrice = BASE_RATE * totalDays;
-            document.getElementById('pbBase').innerText = `${formatRupiah(totalBasePrice)} (${totalDays} hari)`;
+            document.getElementById('pbBase').innerText = `${formatRupiah(BASE_RATE)} x ${totalDays} hari`;
+
+            const driverService = document.getElementById('driverService');
+            const driverRow = document.getElementById('pb-driver-row');
+            if (driverService && driverService.value === "1") {
+                totalDriverFee = driverFeePerDay * totalDays;
+                if (driverRow) driverRow.style.setProperty('display', 'flex', 'important');
+                document.getElementById('pbDriver').innerText = `${formatRupiah(driverFeePerDay)} x ${totalDays} hari`;
+            } else {
+                totalDriverFee = 0;
+                if (driverRow) driverRow.style.setProperty('display', 'none', 'important');
+            }
 
             const calculatedDeposit = Math.round((totalBasePrice * 10) / 100);
             const currentDeposit = calculatedDeposit < 20000 ? 20000 : calculatedDeposit;
 
             const depositEl = document.getElementById('pbDeposit');
-            if (depositEl) {
-                depositEl.innerText = formatRupiah(currentDeposit);
-            }
+            if (depositEl) depositEl.innerText = formatRupiah(currentDeposit);
 
-            const deliveryRow = document.getElementById('pb-delivery-row');
-            if (selectLokasi.value.includes('Antar ke Alamat')) {
+            if (selectLokasi && selectLokasi.value.includes('Antar ke Alamat')) {
                 deliveryFee = 50000;
-                deliveryRow.style.display = 'flex';
+                document.getElementById('pb-delivery-row').style.display = 'flex';
             } else {
                 deliveryFee = 0;
-                deliveryRow.style.display = 'none';
+                document.getElementById('pb-delivery-row').style.none = 'none';
             }
 
             if (promoDiscount > 0) {
@@ -1627,7 +1648,7 @@
                 document.getElementById('pbDiscount').innerText = `-${formatRupiah(promoDiscount)}`;
             }
 
-            const grandTotal = totalBasePrice + deliveryFee - promoDiscount;
+            const grandTotal = totalBasePrice + deliveryFee + totalDriverFee - promoDiscount;
             totalPayment = grandTotal;
             document.getElementById('pbTotal').innerText = formatRupiah(grandTotal);
 
@@ -1926,6 +1947,7 @@
             const lokasiSewa = selectLokasi?.value;
             const randomId = Math.floor(10000 + Math.random() * 90000);
             const merchant = `CAP-2026-${randomId}`;
+            const driverService = document.getElementById('driverService')?.value;
 
             const payloadRental = {
                 nik: nikValue,
@@ -1941,9 +1963,9 @@
                 method: methodUse,
                 reference: window.currentTripayReference,
                 merchant_ref: window.currentMerchantRef,
+                with_driver: driverService === "1" ? 1 : 0,
             };
 
-            console.log(payloadRental)
             fetch('/rentals/store', {
                     method: 'POST',
                     headers: {

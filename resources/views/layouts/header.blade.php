@@ -21,7 +21,6 @@
                                 <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Profil</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -46,7 +45,7 @@
                             <i class="bi bi-person"></i> LOGIN
                         </a>
                     @endauth
-                    <a href="#booking" class="btn-nav">PESAN SEKARANG</a>
+                    <a href="{{ route('landing') }}#booking" class="btn-nav">PESAN SEKARANG</a>
 
                 @endauth
         </div>

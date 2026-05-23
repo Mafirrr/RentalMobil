@@ -187,6 +187,21 @@
                 <i class="bi bi-patch-check-fill"></i> Pembayaran Telah Dibatalkan
             </div>
         @elseif ($remaining > 0)
+            @if ($booking->driver)
+                @php
+                    $rawPhone = $booking->driver->phone;
+                    $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+                    if (str_starts_with($cleanPhone, '0')) {
+                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                    }
+                @endphp
+                <a href="https://wa.me/{{ $cleanPhone }}?text=Halo%20{{ urlencode($booking->driver->name) }},%20saya%20pelanggan%20dari%20pesanan%20%23{{ $booking->id }}."
+                    target="_blank"
+                    class="btn btn-success w-100 mt-3 py-2 fw-bold d-flex align-items-center justify-content-center">
+                    <i class="bi bi-whatsapp me-2"></i> HUBUNGI DRIVER ({{ $booking->driver->name }})
+                </a>
+            @endif
+
             <button type="button" class="btn btn-outline-warning w-100 mt-3 py-2 fw-bold" data-bs-toggle="modal"
                 data-bs-target="#paymentModal{{ $booking->id }}">
                 BAYAR SISA <i class="bi bi-arrow-right"></i>

@@ -504,7 +504,6 @@
         .empty-state {
             text-align: center;
             padding: 80px 20px;
-            display: none;
         }
 
         .empty-state i {
@@ -626,10 +625,10 @@
 
     <div class="vehicle-grid">
         <div class="container">
-            @if ($cars->isNotEmpty() || $motorcycles->isNotEmpty())
+            @if (isset($cars) && $cars->isNotEmpty())
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="result-info">Menampilkan <span
-                            id="visibleCount">{{ $cars->count() + $motorcycles->count() }}</span> kendaraan</div>
+                    <div class="result-info">Menampilkan <span id="visibleCount">{{ $cars->count() }}</span> kendaraan
+                    </div>
                 </div>
 
                 @if ((!request()->filled('type') || request('type') == 'car') && $cars->isNotEmpty())
@@ -698,87 +697,23 @@
                         </div>
                     @endforeach
                 </div>
-
-                @if ((!request()->filled('type') || request('type') == 'motorcycle') && $motorcycles->isNotEmpty())
-                    <div class="section-divider" id="motorDivider">
-                        <div class="section-divider-line"></div>
-                        <div class="section-divider-label" style="color:#00d4ff;">
-                            <i class="bi bi-bicycle" style="color:#00d4ff"></i> MOTOR
-                            <span class="section-divider-count"
-                                style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:#00d4ff;"
-                                id="motorCount">{{ $motorcycles->count() }}</span>
-                        </div>
-                        <div class="section-divider-line"></div>
-                    </div>
-                @endif
-
-                <div class="row g-4" id="motorGrid">
-                    @foreach ($motorcycles as $vehicle)
-                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="motor"
-                            data-cat="{{ $vehicle->category->name }}" data-name="{{ $vehicle->model }}"
-                            data-price="{{ $vehicle->daily_rate }}">
-                            <a href="{{ route('detail', $vehicle->id) }}" class="card-link">
-                                <div class="car-card motor-card">
-                                    <div class="car-img-wrap">
-                                        <span class="car-badge">{{ strtoupper($vehicle->category->name) }}</span>
-                                        <span
-                                            class="avail-badge {{ $vehicle->status == 'available' ? 'available' : 'booked' }}">{{ $vehicle->status }}</span>
-                                        <svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg"
-                                            style="width:100%;max-width:240px;position:relative;z-index:1;">
-                                            <defs>
-                                                <linearGradient id="mc0" x1="0%" y1="0%"
-                                                    x2="100%" y2="100%">
-                                                    <stop offset="0%" style="stop-color:#282828" />
-                                                    <stop offset="100%" style="stop-color:#141414" />
-                                                </linearGradient>
-                                            </defs>
-                                            <ellipse cx="140" cy="110" rx="110" ry="7"
-                                                fill="rgba(0,0,0,0.45)" />
-                                            <path d="M28 78 L28 94 Q28 101 35 101 L245 101 Q252 101 252 94 L252 78 Z"
-                                                fill="url(#mc0)" stroke="#282828" stroke-width="1" />
-                                            <path d="M70 78 L88 50 Q95 42 107 42 L173 42 Q185 42 192 50 L210 78 Z"
-                                                fill="#1c1c1c" stroke="#222" stroke-width="1" />
-                                            <circle cx="72" cy="101" r="18" fill="#0e0e0e" stroke="#333"
-                                                stroke-width="1.5" />
-                                            <circle cx="208" cy="101" r="18" fill="#0e0e0e" stroke="#333"
-                                                stroke-width="1.5" />
-                                        </svg>
-                                    </div>
-                                    <div class="car-body">
-                                        <div class="car-category">{{ $vehicle->motorcycle->transmission ?? '-' }} ·
-                                            {{ $vehicle->motorcycle->engine_capacity ?? '-' }}cc · {{ $vehicle->color }}
-                                        </div>
-                                        <div class="car-name">{{ $vehicle->model }}</div>
-                                        <div class="car-specs">
-                                            <div class="spec-item"><i class="bi bi-speedometer2"
-                                                    style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->engine_capacity ?? '-' }}cc</div>
-                                            <div class="spec-item"><i class="bi bi-gear-fill" style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->transmission ?? '-' }}</div>
-                                            <div class="spec-item"><i class="bi bi-shield-check"
-                                                    style="color:#00d4ff"></i>
-                                                {{ ($vehicle->motorcycle->includes_helmet ?? 0) == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
-                                            </div>
-                                        </div>
-                                        <div class="car-footer">
-                                            <div class="car-price"><span class="price-amount">Rp
-                                                    {{ number_format($vehicle->daily_rate, 0, ',', '.') }}</span><span
-                                                    class="price-label">per hari</span></div>
-                                            <div class="btn-rent">DETAIL <i class="bi bi-arrow-right"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
             @else
                 <div class="empty-state" id="emptyState">
-                    <i class="bi bi-search d-block"></i>
-                    <h5
-                        style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;margin-bottom:8px;">
-                        TIDAK DITEMUKAN</h5>
-                    <p>Coba ubah filter atau kata kunci pencarian.</p>
+                    @if (request()->routeIs('wishlist.*') || request()->get('view') == 'wishlist')
+                        <i class="bi bi-heartbreak d-block" style="font-size: 3rem; color: var(--danger);"></i>
+                        <h5
+                            style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;margin-bottom:8px;">
+                            WISHLIST KOSONG
+                        </h5>
+                        <p>Anda belum menambahkan kendaraan apa pun ke dalam daftar keinginan.</p>
+                    @else
+                        <i class="bi bi-search d-block"></i>
+                        <h5
+                            style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;margin-bottom:8px;">
+                            TIDAK DITEMUKAN
+                        </h5>
+                        <p>Coba ubah filter atau kata kunci pencarian Anda.</p>
+                    @endif
                 </div>
             @endif
         </div>

@@ -14,13 +14,17 @@ return new class extends Migration
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
-            $table->enum('vehicle_type', ['car', 'motorcycle']);
+            $table->enum('vehicle_type', ['car', 'motorcycle'])->default('car');
             $table->string('model');
             $table->string('plate_number')->unique();
             $table->year('year');
             $table->string('color');
             $table->decimal('daily_rate', 12, 2);
             $table->enum('status', ['available', 'rented', 'maintenance'])->default('available');
+            $table->string('image_front')->nullable();
+            $table->string('image_side')->nullable();
+            $table->string('image_interior')->nullable();
+            $table->string('image_engine')->nullable();
             $table->timestamps();
         });
     }

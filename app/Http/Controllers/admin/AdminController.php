@@ -20,9 +20,7 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         $totalArmada = Vehicle::count();
-
         $penyewaAktif = Rental::where('status', 'ongoing')->distinct('user_id')->count('user_id');
-
         $pendapatanCompleted = Rental::where('status', 'completed')->sum('amount_paid');
 
         $pendapatanOngoing = Rental::where('rentals.status', 'ongoing')
@@ -104,11 +102,7 @@ class AdminController extends Controller
     }
     public function vehicles(Request $request)
     {
-        $query = Vehicle::query()->with(['car', 'motorcycle']);
-
-        if ($request->filled('type')) {
-            $query->where('vehicle_type', $request->type);
-        }
+        $query = Vehicle::query()->with(['car']);
 
         if ($request->has('search')) {
             $query->where('model', 'like', '%' . $request->search . '%')
@@ -167,11 +161,20 @@ class AdminController extends Controller
                         default:
                             $customName = $position;
                     }
-                    $extension = $request->file($position)->getClientOriginalExtension();
+                    $file = $request->file($position);
+                    $extension = $file->getClientOriginalExtension();
                     $fileName = $customName . '.' . $extension;
                     $folderPath = 'vehicles/' . $vehicle->id;
-                    $path = $request->file($position)->storeAs($folderPath, $fileName, 'public');
-                    $uploadedImages[$position] = $path;
+
+                    $path = Storage::disk('supabase')->putFileAs($folderPath, $file, $fileName);
+
+                    $s3Url = Storage::disk('supabase')->url($path);
+                    $urlPublic = str_replace(
+                        '.storage.supabase.co/storage/v1/s3/',
+                        '.supabase.co/storage/v1/object/public/',
+                        $s3Url
+                    );
+                    $uploadedImages[$position] = $urlPublic;
                 }
             }
 
@@ -186,13 +189,6 @@ class AdminController extends Controller
                     'transmission' => $request->transmission,
                     'fuel_type' => $request->fuel_type,
                 ]);
-            } else {
-                Motorcycle::create([
-                    'vehicle_id' => $vehicle->id,
-                    'engine_capacity' => $request->engine_capacity,
-                    'includes_helmet' => $request->includes_helmet,
-                    'transmission' => $request->transmission,
-                ]);
             }
 
             DB::commit();
@@ -205,7 +201,7 @@ class AdminController extends Controller
 
     public function editCar($id)
     {
-        $vehicle = Vehicle::with(['car', 'motorcycle'])->findOrFail($id);
+        $vehicle = Vehicle::with(['car'])->findOrFail($id);
         $categories = Category::all();
 
         $images = [
@@ -215,23 +211,10 @@ class AdminController extends Controller
             'engine'   => asset('images/placeholder.jpg'),
         ];
 
-        $folderPath = 'vehicles/' . $id;
-
-        if (Storage::disk('public')->exists($folderPath)) {
-            $files = Storage::disk('public')->files($folderPath);
-            foreach ($files as $file) {
-                $fileName = basename($file);
-                if (Str::startsWith($fileName, 'foto_depan')) {
-                    $images['front'] = asset('storage/' . $file);
-                } elseif (Str::startsWith($fileName, 'foto_samping')) {
-                    $images['side'] = asset('storage/' . $file);
-                } elseif (Str::startsWith($fileName, 'foto_interior')) {
-                    $images['interior'] = asset('storage/' . $file);
-                } elseif (Str::startsWith($fileName, 'foto_mesin')) {
-                    $images['engine'] = asset('storage/' . $file);
-                }
-            }
-        }
+        if (!empty($vehicle->image_front)) $images['front'] = $vehicle->image_front;
+        if (!empty($vehicle->image_side)) $images['side'] = $vehicle->image_side;
+        if (!empty($vehicle->image_interior)) $images['interior'] = $vehicle->image_interior;
+        if (!empty($vehicle->image_engine)) $images['engine'] = $vehicle->image_engine;
 
         return view('admin.cars.edit', compact('vehicle', 'categories', 'images'));
     }
@@ -255,8 +238,14 @@ class AdminController extends Controller
 
             foreach ($imagePositions as $position) {
                 if ($request->hasFile($position)) {
-                    if ($vehicle->$position && Storage::disk('public')->exists($vehicle->$position)) {
-                        Storage::disk('public')->delete($vehicle->$position);
+                    if (!empty($vehicle->$position)) {
+                        $pathOnly = parse_url($vehicle->$position, PHP_URL_PATH);
+                        $bucketName = env('SUPABASE_BUCKET', 'laravel-rental');
+                        $cleanOldPath = Str::after($pathOnly, $bucketName . '/');
+
+                        if (Storage::disk('supabase')->exists($cleanOldPath)) {
+                            Storage::disk('supabase')->delete($cleanOldPath);
+                        }
                     }
 
                     switch ($position) {
@@ -275,13 +264,21 @@ class AdminController extends Controller
                         default:
                             $customName = $position;
                     }
-                    $extension = $request->file($position)->getClientOriginalExtension();
-                    $fileName = $customName . '.' . $extension;
+                    $file = $request->file($position);
+                    $extension = $file->getClientOriginalExtension();
+                    $fileName = $customName . '_' . time() . '.' . $extension;
                     $folderPath = 'vehicles/' . $id;
-                    $path = $request->file($position)->storeAs($folderPath, $fileName, 'public');
-                    $vehicleData[$position] = $path;
+                    $path = Storage::disk('supabase')->putFileAs($folderPath, $file, $fileName);
+                    $s3Url = Storage::disk('supabase')->url($path);
+                    $urlPublic = str_replace(
+                        '.storage.supabase.co/storage/v1/s3/',
+                        '.supabase.co/storage/v1/object/public/',
+                        $s3Url
+                    );
+                    $vehicleData[$position] = $urlPublic;
                 }
             }
+
             $vehicle->update($vehicleData);
 
             if ($vehicle->vehicle_type === 'car') {
@@ -290,19 +287,12 @@ class AdminController extends Controller
                     'transmission' => $request->transmission,
                     'fuel_type' => $request->fuel_type,
                 ]);
-            } else {
-                $vehicle->motorcycle()->update([
-                    'engine_capacity' => $request->engine_capacity,
-                    'includes_helmet' => $request->includes_helmet,
-                    'transmission' => $request->transmission,
-                ]);
             }
 
             DB::commit();
             return redirect()->route('admin.vehicles')->with('success', 'Armada berhasil diupdate!');
         } catch (\Exception $e) {
             DB::rollback();
-            dd($e);
             return back()->with('error', $e->getMessage());
         }
     }
@@ -325,12 +315,27 @@ class AdminController extends Controller
     {
         $vehicle = Vehicle::findOrFail($id);
 
-        if ($vehicle->image) {
-            Storage::delete('public/' . $vehicle->image);
+        DB::beginTransaction();
+        try {
+            $imagePositions = ['image_front', 'image_side', 'image_interior', 'image_engine'];
+            $bucketName = env('SUPABASE_BUCKET', 'laravel-rental');
+
+            foreach ($imagePositions as $position) {
+                if (!empty($vehicle->$position)) {
+                    $pathOnly = parse_url($vehicle->$position, PHP_URL_PATH);
+                    $cleanPath = Str::after($pathOnly, $bucketName . '/');
+                    if (Storage::disk('supabase')->exists($cleanPath)) {
+                        Storage::disk('supabase')->delete($cleanPath);
+                    }
+                }
+            }
+            $vehicle->delete();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Armada beserta seluruh fotonya berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Gagal menghapus armada: ' . $e->getMessage());
         }
-
-        $vehicle->delete();
-
-        return redirect()->back()->with('success', 'Armada berhasil dihapus!');
     }
 }

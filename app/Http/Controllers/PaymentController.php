@@ -18,7 +18,7 @@ class PaymentController extends Controller
     public function index(Request $request)
     {
         $user = User::with(['userDetail'])->findOrFail(Auth::id());
-        $vehicle = Vehicle::with(['car', 'motorcycle', 'category'])->findOrFail($request->vehicle_id);
+        $vehicle = Vehicle::with(['car', 'category'])->findOrFail($request->vehicle_id);
         $existingRentals = Rental::where('vehicle_id', $vehicle->id)
             ->where('status', 'ongoing')
             ->get(['rental_date', 'return_date_scheduled']);
@@ -167,6 +167,7 @@ class PaymentController extends Controller
             'reference' => 'required|string',
             'method' => 'required|string',
             'merchant_ref' => 'required|string',
+            'with_driver' => 'boolean'
         ]);
 
         DB::beginTransaction();
@@ -192,6 +193,7 @@ class PaymentController extends Controller
                 'total_price' => $request->total,
                 'amount_paid' => $amount,
                 'status' => 'pending',
+                'with_driver' => $request->with_driver,
             ]);
 
             $feeAmount = 4500;

@@ -15,6 +15,7 @@ return new class extends Migration
             $Schema->id();
             $Schema->string('merchant_ref')->unique()->index();
             $Schema->foreignId('user_id')->constrained('users');
+            $Schema->foreignId('driver_id')->nullable()->constrained('drivers')->onDelete('set null');
             $Schema->string('NIK')->nullable();
             $Schema->foreignId('vehicle_id')->constrained('vehicles');
             $Schema->dateTime('rental_date');
@@ -23,6 +24,7 @@ return new class extends Migration
             $Schema->decimal('total_price', 12, 2)->default(0);
             $Schema->decimal('amount_paid', 12, 2)->default(0);
             $Schema->enum('status', ['pending', 'ongoing', 'completed', 'cancelled'])->default('ongoing');
+            $Schema->boolean('with_driver')->default(0);
             $Schema->timestamps();
             $Schema->softDeletes();
         });

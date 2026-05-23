@@ -19,37 +19,24 @@ class LandingController extends Controller
     public function index(Request $request)
     {
         $categories = Category::all();
-        $query = Vehicle::with(['category', 'car', 'motorcycle'])->where('status', 'available');
+        $query = Vehicle::with(['category', 'car'])->where('status', 'available');
         if ($request->has('category') && $request->category != '') {
             $query->where('category_id', $request->category);
         }
         $vehicles = $query->latest()->take(6)->get();
         foreach ($vehicles as $vehicle) {
-            $vehicleImages = [
-                'front' => null,
-                'right' => asset('images/placeholder.jpg'),
-                'left'  => asset('images/placeholder.jpg'),
-                'back'  => asset('images/placeholder.jpg'),
+            $images = [
+                'front'    => asset('images/placeholder.jpg'),
+                'side'     => asset('images/placeholder.jpg'),
+                'interior' => asset('images/placeholder.jpg'),
+                'engine'   => asset('images/placeholder.jpg'),
             ];
+            if (!empty($vehicle->image_front)) $images['front'] = $vehicle->image_front;
+            if (!empty($vehicle->image_side)) $images['side'] = $vehicle->image_side;
+            if (!empty($vehicle->image_interior)) $images['interior'] = $vehicle->image_interior;
+            if (!empty($vehicle->image_engine)) $images['engine'] = $vehicle->image_engine;
 
-            $folderPath = 'vehicles/' . $vehicle->id;
-
-            if (Storage::disk('public')->exists($folderPath)) {
-                $files = Storage::disk('public')->files($folderPath);
-                foreach ($files as $file) {
-                    $fileName = basename($file);
-                    if (Str::startsWith($fileName, 'foto_depan')) {
-                        $vehicleImages['front'] = asset('storage/' . $file);
-                    } elseif (Str::startsWith($fileName, 'foto_samping_kanan')) {
-                        $vehicleImages['right'] = asset('storage/' . $file);
-                    } elseif (Str::startsWith($fileName, 'foto_samping_kiri')) {
-                        $vehicleImages['left'] = asset('storage/' . $file);
-                    } elseif (Str::startsWith($fileName, 'foto_belakang')) {
-                        $vehicleImages['back'] = asset('storage/' . $file);
-                    }
-                }
-            }
-            $vehicle->images_data = $vehicleImages;
+            $vehicle->images_data = $images;
         }
         return view('welcome', compact('vehicles', 'categories'));
     }
@@ -58,11 +45,7 @@ class LandingController extends Controller
     {
         $categories = Category::all();
 
-        $query = Vehicle::with(['car', 'motorcycle', 'category']);
-
-        if ($request->filled('type')) {
-            $query->where('vehicle_type', $request->type);
-        }
+        $query = Vehicle::with(['car', 'category']);
 
         if ($request->filled('category')) {
             $categoryName = $request->category;
@@ -97,37 +80,18 @@ class LandingController extends Controller
             $query->latest();
         }
 
-        $carQuery = (clone $query)->where('vehicle_type', 'car');
-        $motorQuery = (clone $query)->where('vehicle_type', 'motorcycle');
-
-        $cars = $carQuery->paginate(8, ['*'], 'car_page')->withQueryString();
-        $motorcycles = $motorQuery->paginate(8, ['*'], 'motor_page')->withQueryString();
+        $cars = $query->paginate(8)->withQueryString();
 
         foreach ($cars as $car) {
-            $car->images_data = $this->getVehicleImage($car->id);
+            $car->images_data = [
+                'front'    => !empty($car->image_front) ? $car->image_front : asset('images/placeholder.jpg'),
+                'side'     => !empty($car->image_side) ? $car->image_side : asset('images/placeholder.jpg'),
+                'interior' => !empty($car->image_interior) ? $car->image_interior : asset('images/placeholder.jpg'),
+                'engine'   => !empty($car->image_engine) ? $car->image_engine : asset('images/placeholder.jpg'),
+            ];
         }
 
-        foreach ($motorcycles as $motor) {
-            $motor->images_data = $this->getVehicleImage($motor->id);
-        }
-
-        return view('category', compact('motorcycles', 'cars', 'categories'));
-    }
-
-    private function getVehicleImage($vehicleId)
-    {
-        $images = ['front' => null];
-        $folderPath = 'vehicles/' . $vehicleId;
-        if (Storage::disk('public')->exists($folderPath)) {
-            $files = Storage::disk('public')->files($folderPath);
-            foreach ($files as $file) {
-                if (Str::startsWith(basename($file), 'foto_depan')) {
-                    $images['front'] = asset('storage/' . $file);
-                    break;
-                }
-            }
-        }
-        return $images;
+        return view('category', compact('cars', 'categories'));
     }
 
     public function wishlist(Request $request)
@@ -170,34 +134,7 @@ class LandingController extends Controller
             }
         }
 
-        $motorcycles = collect();
-        if (empty($type) || $type === 'motorcycle') {
-            $motorcyclesQuery = clone $wishlistQuery;
-
-            $motorcyclesQuery->whereHas('vehicles.motorcycle', function ($q) use ($search) {
-                if ($search) {
-                    $q->where('model', 'like', "%{$search}%");
-                }
-            });
-
-            if ($categoryName) {
-                $motorcyclesQuery->whereHas('vehicles.category', function ($q) use ($categoryName) {
-                    $q->where('name', $categoryName);
-                });
-            }
-
-            $motorcycles = $motorcyclesQuery->with(['vehicles.motorcycle', 'vehicles.category'])->get()->pluck('vehicles');
-
-            if ($sort === 'price-asc') {
-                $motorcycles = $motorcycles->sortBy('daily_rate');
-            } elseif ($sort === 'price-desc') {
-                $motorcycles = $motorcycles->sortByDesc('daily_rate');
-            } elseif ($sort === 'name-asc') {
-                $motorcycles = $motorcycles->sortBy('model');
-            }
-        }
-
-        return view('wishlist', compact('cars', 'motorcycles', 'categories'));
+        return view('wishlist', compact('cars',  'categories'));
     }
 
     public function riwayat(Request $request)
@@ -208,7 +145,7 @@ class LandingController extends Controller
         $search = $request->input('search');
 
         $query = Rental::where('user_id', $userId)
-            ->with(['vehicle.car', 'vehicle.motorcycle', 'vehicle.category', 'payment'])
+            ->with(['vehicle.car', 'vehicle.category', 'payment'])
             ->withSum(['payment as total_paid' => function ($q) {
                 $q->where('status', 'paid');
             }], 'net_amount');
@@ -220,8 +157,6 @@ class LandingController extends Controller
         if ($type) {
             if ($type === 'car') {
                 $query->whereHas('vehicle.car');
-            } elseif ($type === 'motorcycle') {
-                $query->whereHas('vehicle.motorcycle');
             }
         }
 
@@ -298,88 +233,65 @@ class LandingController extends Controller
                     }
                 }
             } catch (\Exception $e) {
+                // Log error jika diperlukan
             }
             return false;
         });
 
-        $baseQuery = Vehicle::with(['category', 'car', 'motorcycle'])->where('status', 'available');
+        $carQuery = Vehicle::with(['category', 'car'])
+            ->where('status', 'available')
+            ->where('vehicle_type', 'car');
 
-        if ($kapasitasDibutuhkan > 2) {
-            $baseQuery->whereHas('car', function ($q) use ($kapasitasDibutuhkan) {
+        if ($kapasitasDibutuhkan > 0) {
+            $carQuery->whereHas('car', function ($q) use ($kapasitasDibutuhkan) {
                 $q->where('capacity', '>=', $kapasitasDibutuhkan);
-            });
-        } else {
-            $baseQuery->where(function ($q) use ($kapasitasDibutuhkan) {
-                $q->whereHas('car', function ($subQ) use ($kapasitasDibutuhkan) {
-                    $subQ->where('capacity', '>=', $kapasitasDibutuhkan);
-                })->orHas('motorcycle');
             });
         }
 
         if ($priceRange && $priceRange !== 'all') {
             [$minPrice, $maxPrice] = explode('-', $priceRange);
-            $baseQuery->whereBetween('daily_rate', [$minPrice, $maxPrice]);
+            $carQuery->whereBetween('daily_rate', [$minPrice, $maxPrice]);
         }
 
         if ($request->filled('category')) {
-            $baseQuery->whereHas('category', function ($q) use ($request) {
+            $carQuery->whereHas('category', function ($q) use ($request) {
                 $q->where('name', $request->category);
             });
         }
 
         if ($request->filled('search')) {
             $keyword = $request->search;
-            $baseQuery->where('model', 'like', "%{$keyword}%");
-        }
-
-        $selectedCategory = $request->get('category');
-
-        $carQuery = clone $baseQuery;
-        $motorQuery = clone $baseQuery;
-
-        if ($selectedCategory === 'motorcycle' || $request->get('type') === 'motorcycle') {
-            $carQuery->whereRaw('1 = 0');
-            $motorQuery->where('vehicle_type', 'motorcycle');
-        } elseif ($selectedCategory === 'car' || $request->get('type') === 'car') {
-            $carQuery->where('vehicle_type', 'car');
-            $motorQuery->whereRaw('1 = 0');
-        } else {
-            $carQuery->where('vehicle_type', 'car');
-            $motorQuery->where('vehicle_type', 'motorcycle');
+            $carQuery->where('model', 'like', "%{$keyword}%");
         }
 
         $sortOption = $request->get('sort', 'default');
         if ($sortOption === 'price-asc') {
             $carQuery->orderBy('daily_rate', 'asc');
-            $motorQuery->orderBy('daily_rate', 'asc');
         } elseif ($sortOption === 'price-desc') {
             $carQuery->orderBy('daily_rate', 'desc');
-            $motorQuery->orderBy('daily_rate', 'desc');
         } elseif ($sortOption === 'name-asc') {
             $carQuery->orderBy('model', 'asc');
-            $motorQuery->orderBy('model', 'asc');
         } else {
-            if ($isRainyPeriod) {
-                $carQuery->orderBy('daily_rate', 'asc');
-                $motorQuery->orderBy('daily_rate', 'asc');
-            } else {
-                $carQuery->orderBy('daily_rate', 'asc');
-                $motorQuery->orderBy('daily_rate', 'asc');
-            }
+            $carQuery->orderBy('daily_rate', 'asc');
         }
 
         $perPage = 8;
-
         $cars = $carQuery->paginate($perPage, ['*'], 'cars_page');
-        $motorcycles = $motorQuery->paginate($perPage, ['*'], 'motorcycles_page');
-
         $cars->appends($request->all());
-        $motorcycles->appends($request->all());
+
+        foreach ($cars as $car) {
+            $car->images_data = [
+                'front'    => !empty($car->image_front) ? $car->image_front : asset('images/placeholder.jpg'),
+                'side'     => !empty($car->image_side) ? $car->image_side : asset('images/placeholder.jpg'),
+                'interior' => !empty($car->image_interior) ? $car->image_interior : asset('images/placeholder.jpg'),
+                'engine'   => !empty($car->image_engine) ? $car->image_engine : asset('images/placeholder.jpg'),
+            ];
+        }
 
         $pesanCuaca = $isRainyPeriod
-            ? "Peringatan cuaca: Diperkirakan hujan di " . $lokasi . " selama waktu sewa. Kami mengutamakan rekomendasi kendaraan roda 4 demi kenyamanan Anda."
-            : "Cuaca diprediksi cerah di " . $lokasi . ". Silakan pilih armada terbaik Anda!";
+            ? "Informasi cuaca: Diperkirakan akan turun hujan di wilayah " . $lokasi . " selama masa sewa Anda. Pastikan performa wiper dan ban mobil dalam kondisi prima."
+            : "Cuaca diprediksi cerah di wilayah " . $lokasi . ". Selamat menikmati perjalanan Anda dengan armada pilihan kami!";
 
-        return view('pencarian', compact('cars', 'motorcycles', 'pesanCuaca', 'isRainyPeriod', 'categories'));
+        return view('pencarian', compact('cars', 'pesanCuaca', 'isRainyPeriod', 'categories'));
     }
 }

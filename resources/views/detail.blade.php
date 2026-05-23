@@ -890,10 +890,10 @@
                     </div>
 
                     <div class="thumbnails">
-                        <div class="thumb active" data-src="{{ $vehicle->images_gallery['samping'] }}">SAMPING</div>
-                        <div class="thumb" data-src="{{ $vehicle->images_gallery['depan'] }}">DEPAN</div>
+                        <div class="thumb active" data-src="{{ $vehicle->images_gallery['side'] }}">SAMPING</div>
+                        <div class="thumb" data-src="{{ $vehicle->images_gallery['front'] }}">DEPAN</div>
                         <div class="thumb" data-src="{{ $vehicle->images_gallery['interior'] }}">INTERIOR</div>
-                        <div class="thumb" data-src="{{ $vehicle->images_gallery['mesin'] }}">MESIN</div>
+                        <div class="thumb" data-src="{{ $vehicle->images_gallery['engine'] }}">MESIN</div>
                     </div>
                 </div>
 
@@ -942,7 +942,6 @@
 
                 <hr class="divider">
 
-                {{-- TABS --}}
                 <div>
                     <div class="tabs">
                         <button class="tab active" onclick="switchTab('spek', this)">Spesifikasi</button>
@@ -959,20 +958,11 @@
                             <div class="spec-row"><span class="spec-key">Tipe</span><span
                                     class="spec-val">{{ $vehicle->category->name }}
                                 </span></div>
-                            @if ($vehicle->vehicle_type == 'car')
-                                <div class="spec-row"><span class="spec-key">Kapasitas</span><span
-                                        class="spec-val">{{ $vehicle->car->capacity }}
-                                        Penumpang</span></div>
-                                <div class="spec-row"><span class="spec-key">Jenis Bahan Bakar</span><span
-                                        class="spec-val">{{ $vehicle->car->fuel_type }}</span></div>
-                            @else
-                                <div class="spec-row"><span class="spec-key">Kapasitas CC</span><span
-                                        class="spec-val">{{ $vehicle->motorcycle->engine_capacity }}
-                                        cc</span></div>
-                                <div class="spec-row"><span class="spec-key">Kapasitas CC</span><span
-                                        class="spec-val">{{ $vehicle->motorcycle->includes_helmet == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
-                                    </span></div>
-                            @endif
+                            <div class="spec-row"><span class="spec-key">Kapasitas</span><span
+                                    class="spec-val">{{ $vehicle->car->capacity }}
+                                    Penumpang</span></div>
+                            <div class="spec-row"><span class="spec-key">Jenis Bahan Bakar</span><span
+                                    class="spec-val">{{ $vehicle->car->fuel_type }}</span></div>
                         </div>
                     </div>
 
@@ -1043,9 +1033,11 @@
                         </button>
                     </form>
                     <div class="btn-row">
-                        <button class="btn-secondary">
-                            <i class="bi bi-chat-dots"></i> Hubungi Dealer
-                        </button>
+                        <a href="https://wa.me/6289627160769?text=Halo%20Dealer%20CAPSTONE,%20saya%20ingin%20bertanya%20mengenai%20ketersediaan%20armada%20rental."
+                            target="_blank"
+                            class="btn btn-secondary text-decoration-none d-inline-flex align-items-center justify-content-center">
+                            <i class="bi bi-whatsapp me-2"></i> Hubungi Dealer
+                        </a>
                         <button class="btn-icon {{ $isSaved ? 'saved' : '' }}" id="saveBtn" title="Simpan"
                             data-id="{{ $vehicle->id }}">
                             <i class="bi {{ $isSaved ? 'bi-heart-fill' : 'bi-heart' }}"></i>
@@ -1099,10 +1091,6 @@
                                 <div class="similar-meta">
                                     {{ $vehicle->category->name }} · {{ $vehicle->car->capacity ?? 0 }} Kursi ·
                                     {{ $vehicle->car->fuel_type ?? '-' }}
-                                </div>
-                            @else
-                                <div class="similar-meta">
-                                    {{ $vehicle->category->name }} · {{ $vehicle->motorcycle->engine_capacity ?? 0 }} CC
                                 </div>
                             @endif
                         </div>

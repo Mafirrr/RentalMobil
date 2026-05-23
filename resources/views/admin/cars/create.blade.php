@@ -4,8 +4,8 @@
         <a href="{{ route('admin.vehicles') }}" class="text-decoration-none text-white small mb-3 d-inline-block">
             <i class="bi bi-chevron-left"></i> Kembali
         </a>
-        <h2 class="fw-bold text-white">Tambah Armada Baru</h2>
-        <p class="text-secondary">Pilih tipe kendaraan dan lengkapi detail unit Anda.</p>
+        <h2 class="fw-bold text-white">Tambah Armada Mobil Baru</h2>
+        <p class="text-secondary">Lengkapi detail unit mobil Anda pada form di bawah ini.</p>
     </div>
 
     <form action="{{ route('admin.vehicles.store') }}" method="POST" enctype="multipart/form-data">
@@ -13,16 +13,7 @@
         <div class="card bg-secondary bg-opacity-10 border-0 shadow-sm" style="border-radius: 24px;">
             <div class="card-body p-5">
                 @include('admin.cars._form')
-
-                <div class="d-flex justify-content-between mt-5">
-                    <button type="button" id="prevBtn" class="btn btn-link text-secondary d-none">Kembali</button>
-                    <button type="button" id="nextBtn"
-                        class="btn btn-primary px-5 py-3 rounded-3 ms-auto">Lanjut</button>
-                    <button type="submit" id="submitBtn" class="btn btn-success px-5 py-3 rounded-3 d-none">Simpan
-                        Armada</button>
-                </div>
             </div>
         </div>
     </form>
-    @include('admin.cars._script')
 @endsection

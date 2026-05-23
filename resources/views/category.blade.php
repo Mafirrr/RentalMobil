@@ -123,109 +123,101 @@
             margin-top: 20px;
         }
 
-        /* FILTER BAR */
         .filter-bar {
             background: var(--bg-surface);
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
-            padding: 20px 0;
+            padding: 14px 0;
             position: sticky;
             top: 65px;
             z-index: 100;
         }
 
-        .filter-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            padding: 4px;
-        }
-
-        .filter-tab {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
-            letter-spacing: 0.1em;
-            padding: 8px 18px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .filter-tab.active {
-            background: var(--accent);
-            color: #000;
-            font-weight: 700;
-        }
-
-        .filter-tab:not(.active):hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.05);
+        .filter-select-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
         .filter-select {
             font-family: 'Space Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             letter-spacing: 0.08em;
-            padding: 8px 14px;
+            padding: 10px 36px 10px 16px;
+            /* Dityesuaikan jarak kanannya agar tidak menabrak teks */
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 2px;
+            border-radius: 4px;
+            /* Sudut sedikit melengkung agar modern */
             color: var(--text-secondary);
             cursor: pointer;
             text-transform: uppercase;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
             appearance: none;
-            padding-right: 30px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
         }
 
         .filter-select:focus {
             outline: none;
             border-color: var(--accent);
-        }
-
-        .search-input-category {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.88rem;
-            padding: 9px 16px 9px 38px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 2px;
             color: var(--text-primary);
-            width: 220px;
-            transition: all 0.2s;
+            box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.1);
+            /* Efek glow halus saat fokus */
         }
 
-        .search-input-category:focus {
-            outline: none;
-            border-color: var(--accent);
-            width: 260px;
-        }
-
-        .search-input-category::placeholder {
+        /* Style ikon panah drop-down kustom */
+        .filter-select-wrapper .select-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--text-muted);
+            font-size: 0.75rem;
+            pointer-events: none;
+            transition: color 0.2s;
         }
 
+        .filter-select-wrapper:hover .select-icon {
+            color: var(--text-primary);
+        }
+
+        /* INPUT PENCARIAN */
         .search-wrap {
             position: relative;
         }
 
         .search-wrap i {
             position: absolute;
-            left: 12px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
             font-size: 0.85rem;
             pointer-events: none;
+        }
+
+        .search-input-category {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.88rem;
+            padding: 10px 16px 10px 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            width: 240px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-input-category:focus {
+            outline: none;
+            border-color: var(--accent);
+            width: 300px;
+            /* Melebar dengan transisi halus saat diklik */
+            background: var(--bg-surface);
+        }
+
+        .search-input-category::placeholder {
+            color: var(--text-muted);
         }
 
         /* SECTION DIVIDER */
@@ -543,22 +535,26 @@
         }
 
         @media (max-width: 768px) {
+            .filter-bar {
+                padding: 12px 0;
+            }
+
             .filter-bar .d-flex {
-                flex-wrap: wrap;
-                gap: 8px !important;
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 12px !important;
             }
 
+            .filter-bar .d-flex .d-flex {
+                width: 100%;
+            }
+
+            .filter-select-wrapper,
+            .filter-select,
+            .search-wrap,
             .search-input-category {
-                width: 100%;
-            }
-
-            .filter-tabs {
-                width: 100%;
-            }
-
-            .filter-tab {
-                flex: 1;
-                justify-content: center;
+                width: 100% !important;
+                /* Biar penuh di layar HP */
             }
         }
 
@@ -619,7 +615,7 @@
                 tangguh tersedia dengan harga terbaik.</p>
             <div class="vehicle-count-badge">
                 <i class="bi bi-collection-fill"></i>
-                <span id="totalCount">{{ $cars->count() + $motorcycles->count() }} Kendaraan Tersedia</span>
+                <span id="totalCount">{{ $cars->count() }} Kendaraan Tersedia</span>
             </div>
         </div>
     </section>
@@ -628,25 +624,9 @@
         <div class="filter-bar">
             <div class="container">
                 <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
-                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <input type="hidden" name="type" id="typeInput" value="{{ request('type') }}">
-                        <div class="filter-tabs">
-                            <button type="button" class="filter-tab {{ request('type') == '' ? 'active' : '' }}"
-                                data-value="">
-                                <i class="bi bi-grid-3x3-gap"></i> Semua
-                            </button>
-                            <button type="button" class="filter-tab {{ request('type') == 'car' ? 'active' : '' }}"
-                                data-value="car">
-                                <i class="bi bi-car-front"></i> Mobil
-                            </button>
-                            <button type="button" class="filter-tab {{ request('type') == 'motorcycle' ? 'active' : '' }}"
-                                data-value="motorcycle">
-                                <i class="bi bi-bicycle"></i> Motor
-                            </button>
-                        </div>
-
-                        <div style="position:relative">
-                            <select class="filter-select" name="category" id="categoryFilter" onchange="this.form.submit()">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="filter-select-wrapper">
+                            <select class="filter-select" name="category" id="categoryFilter">
                                 <option value="">Semua Kategori</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->name }}"
@@ -655,26 +635,29 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <i class="bi bi-chevron-down"
-                                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.7rem;pointer-events:none"></i>
+                            <i class="bi bi-chevron-down select-icon"></i>
                         </div>
 
-                        <div style="position:relative">
-                            <select class="filter-select" name="sort" id="sortFilter" onchange="this.form.submit()">
-                                <option value="default">Urutkan</option>
-                                <option value="price-asc">Harga Terendah</option>
-                                <option value="price-desc">Harga Tertinggi</option>
-                                <option value="name-asc">Nama A-Z</option>
+                        <div class="filter-select-wrapper">
+                            <select class="filter-select" name="sort" id="sortFilter">
+                                <option value="default" {{ request('sort') == 'default' ? 'selected' : '' }}>Urutkan
+                                </option>
+                                <option value="price-asc" {{ request('sort') == 'price-asc' ? 'selected' : '' }}>Harga
+                                    Terendah</option>
+                                <option value="price-desc" {{ request('sort') == 'price-desc' ? 'selected' : '' }}>Harga
+                                    Tertinggi</option>
+                                <option value="name-asc" {{ request('sort') == 'name-asc' ? 'selected' : '' }}>Nama A-Z
+                                </option>
                             </select>
-                            <i class="bi bi-chevron-down"
-                                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.7rem;pointer-events:none"></i>
+                            <i class="bi bi-chevron-down select-icon"></i>
                         </div>
                     </div>
                     <div class="search-wrap">
                         <i class="bi bi-search"></i>
                         <input type="text" name="search" class="search-input-category" id="searchInput"
-                            placeholder="Cari kendaraan..." value="{{ request('search') }}">
+                            placeholder="Cari kendaraan..." value="{{ request('search') }}" autocomplete="off">
                     </div>
+
                 </div>
             </div>
         </div>
@@ -683,10 +666,9 @@
 
     <div class="vehicle-grid">
         <div class="container">
-            @if ($cars->isNotEmpty() || $motorcycles->isNotEmpty())
+            @if ($cars->isNotEmpty())
                 <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="result-info">Menampilkan <span
-                            id="visibleCount">{{ $cars->count() + $motorcycles->count() }}</span>
+                    <div class="result-info">Menampilkan <span id="visibleCount">{{ $cars->count() }}</span>
                         kendaraan</div>
                 </div>
 
@@ -773,108 +755,6 @@
                 <div class="d-flex justify-content-center mt-5">
                     {{ $cars->links('pagination::bootstrap-5') }}
                 </div>
-
-                @if ((!request()->filled('type') || request('type') == 'motor') && $motorcycles->isNotEmpty())
-                    <div class="section-divider" id="motorDivider">
-                        <div class="section-divider-line"></div>
-                        <div class="section-divider-label" style="color:#00d4ff;">
-                            <i class="bi bi-bicycle" style="color:#00d4ff"></i> MOTOR
-                            <span class="section-divider-count"
-                                style="background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.3);color:#00d4ff;"
-                                id="motorCount">
-                                {{ $motorcycles->total() }} </span>
-                        </div>
-                        <div class="section-divider-line"></div>
-                    </div>
-                @endif
-
-                <div class="row g-4" id="motorGrid">
-                    @foreach ($motorcycles as $index => $vehicle)
-                        <div class="col-xl-3 col-lg-4 col-md-6 fade-up vehicle-item" data-type="motor" data-cat="Matic"
-                            data-name="honda pcx 160" data-price="150000" style="transition-delay:0.24s">
-                            <a href="{{ route('detail', $vehicle->id) }}" class="card-link">
-                                <div class="car-card motor-card">
-                                    <div class="car-img-wrap">
-                                        <span class="car-badge">{{ strtoupper($vehicle->category->name) }}</span>
-                                        <span
-                                            class="avail-badge {{ $vehicle->status == 'available' ? 'available' : 'booked' }}">{{ $vehicle->status }}</span>
-
-                                        <div class="img-aspect-container"
-                                            style="width: 100%; aspect-ratio: 280 / 120; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                                            @if (isset($vehicle->images_data['front']) && $vehicle->images_data['front'] !== null)
-                                                <img src="{{ $vehicle->images_data['front'] }}"
-                                                    alt="{{ $vehicle->model }}"
-                                                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
-                                            @else
-                                                <svg viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg"
-                                                    style="width:100%;max-width:220px;position:relative;z-index:1;">
-                                                    <defs>
-                                                        <linearGradient id="mg{{ $index }}" x1="0%"
-                                                            y1="0%" x2="100%" y2="100%">
-                                                            <stop offset="0%" style="stop-color:#252525" />
-                                                            <stop offset="100%" style="stop-color:#151515" />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <ellipse cx="140" cy="112" rx="105" ry="6"
-                                                        fill="rgba(0,0,0,0.4)" />
-                                                    <circle cx="80" cy="98" r="26" fill="#111"
-                                                        stroke="#2a2a2a" stroke-width="2" />
-                                                    <circle cx="80" cy="98" r="17" fill="#0a0a0a"
-                                                        stroke="#333" stroke-width="1.5" />
-                                                    <circle cx="80" cy="98" r="6" fill="#1a1a1a"
-                                                        stroke="rgba(0,212,255,0.4)" stroke-width="1.2" />
-                                                    <circle cx="210" cy="98" r="24" fill="#111"
-                                                        stroke="#2a2a2a" stroke-width="2" />
-                                                    <circle cx="210" cy="98" r="15" fill="#0a0a0a"
-                                                        stroke="#333" stroke-width="1.5" />
-                                                    <circle cx="210" cy="98" r="5" fill="#1a1a1a"
-                                                        stroke="rgba(0,212,255,0.4)" stroke-width="1.2" />
-                                                    <path d="M80 96 L108 58 L170 53 L204 70 L210 80" fill="none"
-                                                        stroke="#2a2a2a" stroke-width="3" stroke-linecap="round" />
-                                                    <path d="M108 58 L170 53 L198 66 L178 79 L124 81 Z"
-                                                        fill="url(#mg{{ $index }})" stroke="#333"
-                                                        stroke-width="1" />
-                                                    <ellipse cx="212" cy="68" rx="10" ry="7"
-                                                        fill="rgba(0,212,255,0.8)" opacity="0.7" />
-                                                    <rect x="78" y="66" width="10" height="5" rx="2"
-                                                        fill="rgba(255,50,50,0.9)" />
-                                                </svg>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="car-body">
-                                        <div class="car-category">{{ $vehicle->motorcycle->transmission }} ·
-                                            {{ $vehicle->motorcycle->engine_capacity }}cc · {{ $vehicle->color }}</div>
-                                        <div class="car-name">{{ $vehicle->model }}</div>
-                                        <div class="car-specs">
-                                            <div class="spec-item"><i class="bi bi-speedometer2"
-                                                    style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->engine_capacity }}cc</div>
-                                            <div class="spec-item"><i class="bi bi-gear-fill" style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->transmission }}</div>
-                                            <div class="spec-item"><i class="bi bi-shield-check"
-                                                    style="color:#00d4ff"></i>
-                                                {{ $vehicle->motorcycle->includes_helmet == 1 ? 'Termasuk Helm' : 'Tidak Termasuk Helm' }}
-                                            </div>
-                                        </div>
-                                        <div class="car-footer">
-                                            <div class="car-price">
-                                                <span class="price-amount">Rp
-                                                    {{ number_format($vehicle->daily_rate, 0, ',', '.') }}</span>
-                                                <span class="price-label">per hari</span>
-                                            </div>
-                                            <div class="btn-rent">DETAIL <i class="bi bi-arrow-right"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div class="d-flex justify-content-center mt-5">
-                    {{ $motorcycles->links('pagination::bootstrap-5') }}
-                </div>
             @else
                 <div class="empty-state" id="emptyState">
                     <i class="bi bi-search d-block"></i>
@@ -903,51 +783,29 @@
             }
 
             const filterForm = document.getElementById('filterForm');
-            const typeInput = document.getElementById('typeInput');
-            const tabs = document.querySelectorAll('.filter-tab');
             const categoryFilter = document.getElementById('categoryFilter');
             const sortFilter = document.getElementById('sortFilter');
-            const statusFilter = document.getElementById('statusFilter');
             const searchInput = document.getElementById('searchInput');
-            if (filterForm) {
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        if (typeInput) {
 
-                            typeInput.value = tab.getAttribute('data-value');
-                            if (categoryFilter) categoryFilter.value = '';
-
-                            filterForm.submit();
-                        }
-                    });
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', () => filterForm.submit());
+            }
+            if (sortFilter) {
+                sortFilter.addEventListener('change', () => filterForm.submit());
+            }
+            if (searchInput && filterForm) {
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        filterForm.submit();
+                    }, 500);
                 });
 
-                if (categoryFilter) {
-                    categoryFilter.addEventListener('change', () => {
-                        filterForm.submit();
-                    });
-                }
-
-                if (sortFilter) {
-                    sortFilter.addEventListener('change', () => {
-                        filterForm.submit();
-                    });
-                }
-
-                if (statusFilter) {
-                    statusFilter.addEventListener('change', () => {
-                        filterForm.submit();
-                    });
-                }
-
-                if (searchInput) {
-                    searchInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            filterForm.submit();
-                        }
-                    });
-                }
+                const val = searchInput.value;
+                searchInput.value = '';
+                searchInput.focus();
+                searchInput.value = val;
             }
         });
     </script>

@@ -17,7 +17,11 @@ class Vehicle extends Model
         'year',
         'color',
         'daily_rate',
-        'status'
+        'status',
+        'image_front',
+        'image_side',
+        'image_interior',
+        'image_engine',
     ];
 
     // Relasi ke kategori
@@ -32,11 +36,6 @@ class Vehicle extends Model
         return $this->hasOne(Car::class, 'vehicle_id');
     }
 
-    // Relasi ke detail motor
-    public function motorcycle(): HasOne
-    {
-        return $this->hasOne(Motorcycle::class, 'vehicle_id');
-    }
 
     public function rentals(): HasMany
     {

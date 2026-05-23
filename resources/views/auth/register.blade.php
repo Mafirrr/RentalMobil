@@ -52,12 +52,23 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <div class="mb-4">
                                 <label class="font-mono text-white small mb-2"
                                     style="font-size: 0.65rem; letter-spacing: 1px;">PASSWORD</label>
-                                <input type="password" name="password" class="form-control font-mono py-2 px-3"
-                                    style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px; font-size: 0.85rem;"
-                                    placeholder="••••••••" required>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="passwordInput"
+                                        class="form-control font-mono py-2 px-3"
+                                        style="background: var(--bg-base); border: 1px solid var(--border); color: var(--text-primary); border-radius: 2px 0 0 2px; font-size: 0.85rem;"
+                                        placeholder="••••••••" required>
+                                    <span class="input-group-text p-0"
+                                        style="background: var(--bg-base); border: 1px solid var(--border); border-left: none; border-radius: 0 2px 2px 0;">
+                                        <button type="button" id="togglePassword"
+                                            class="btn text-secondary h-100 d-flex align-items-center px-3 shadow-none border-0"
+                                            style="background: transparent;">
+                                            <i class="bi bi-eye" id="eyeIcon" style="font-size: 1.1rem;"></i>
+                                        </button>
+                                    </span>
+                                </div>
                             </div>
 
                             <div class="mb-3">
@@ -121,6 +132,15 @@
     </div>
 
     <style>
+        .input-group:focus-within .input-group-text {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 10px var(--accent-dim) !important;
+        }
+
+        .input-group:focus-within input.form-control {
+            box-shadow: none !important;
+        }
+
         input.form-control:focus,
         textarea.form-control:focus {
             background: var(--bg-base) !important;
@@ -139,4 +159,31 @@
             -moz-appearance: textfield;
         }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            const togglePassword = document.getElementById('togglePassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+
+            togglePassword.addEventListener('click', function() {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+
+                if (isPassword) {
+                    eyeIcon.classList.remove('bi-eye');
+                    eyeIcon.classList.add('bi-eye-slash');
+                    togglePassword.classList.remove('text-secondary');
+                    togglePassword.classList.add(
+                        'text-white'); // Beri highlight putih saat password terlihat
+                } else {
+                    eyeIcon.classList.remove('bi-eye-slash');
+                    eyeIcon.classList.add('bi-eye');
+                    togglePassword.classList.remove('text-white');
+                    togglePassword.classList.add('text-secondary');
+                }
+            });
+        });
+    </script>
 @endsection

@@ -24,17 +24,6 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label class="form-label small text-secondary">JENIS ARMADA</label>
-                        <select name="vehicle_type" class="form-select bg-dark text-white border-secondary">
-                            <option value="">Semua Jenis (Mobil & Motor)</option>
-                            <option value="car" {{ request('vehicle_type') == 'car' ? 'selected' : '' }}>Khusus Mobil
-                            </option>
-                            <option value="motorcycle" {{ request('vehicle_type') == 'motorcycle' ? 'selected' : '' }}>
-                                Khusus Motor</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
                         <label class="form-label small text-secondary">STATUS RENTAL</label>
                         <select name="status" class="form-select bg-dark text-white border-secondary">
                             <option value="">Semua Status</option>
@@ -53,7 +42,7 @@
                             <i class="bi bi-arrow-clockwise"></i>
                         </a>
                         <button type="submit" class="btn btn-primary text-dark w-50 py-2 fw-bold">
-                            <i class="bi bi-funnel" style="color: #000000;"></i>
+                            <span class="text-dark fw-bold">Cari</span>
                         </button>
                     </div>
                 </form>
@@ -85,35 +74,82 @@
                         <tbody>
                             @forelse ($recentRentals as $rental)
                                 <tr class="align-middle">
+                                    <!-- KOLOM PENYEWA -->
                                     <td class="py-3">
                                         <div class="fw-bold text-white">
-                                            {{ $rental->user->userDetail->full_name ?? 'Nama Tidak Diisi' }}</div>
+                                            {{ $rental->user->userDetail->full_name ?? 'Nama Tidak Diisi' }}
+                                        </div>
                                         <div class="small text-secondary">
                                             <i
                                                 class="bi bi-whatsapp text-success me-1"></i>{{ $rental->user->userDetail->phone ?? '-' }}
                                         </div>
                                     </td>
+
+                                    <!-- KOLOM ARMADA & DRIVER -->
                                     <td class="py-3">
                                         @if ($rental->vehicle)
                                             <div class="d-flex align-items-center gap-2">
                                                 <span
-                                                    class="badge text-uppercase bg-opacity-10 text-black
-                                                    {{ $rental->vehicle->vehicle_type == 'car' ? 'bg-info text-info border border-info border-opacity-25' : 'bg-warning text-warning border border-warning border-opacity-25' }}"
+                                                    class="badge text-uppercase bg-opacity-10
+                            {{ $rental->vehicle->vehicle_type == 'car' ? 'bg-info text-white border border-info border-opacity-25' : 'bg-warning text-warning border border-warning border-opacity-25' }}"
                                                     style="font-size: 0.65rem; padding: 2px 6px;">
                                                     {{ $rental->vehicle->vehicle_type == 'car' ? 'Mobil' : 'Motor' }}
                                                 </span>
                                                 <span class="fw-bold text-white">{{ $rental->vehicle->model }}</span>
                                             </div>
-                                            <div class="small text-secondary mt-1">
+                                            <div class="small text-secondary mt-1 mb-2">
                                                 Plat: {{ $rental->vehicle->plate_number ?? '-' }}
                                                 @if ($rental->vehicle->vehicle_type == 'motorcycle' && $rental->vehicle->motorcycle)
                                                     · {{ $rental->vehicle->motorcycle->engine_capacity }} CC
                                                 @endif
                                             </div>
+
+                                            <!-- LOGIKA TAMBAHAN: ASSIGN DRIVER -->
+                                            @if ($rental->with_driver == 1)
+                                                <div class="mt-2 p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25"
+                                                    style="max-width: 280px;">
+                                                    <div class="small text-secondary fw-bold text-uppercase"
+                                                        style="font-size: 0.65rem;">
+                                                        <i class="bi bi-person-badge text-info me-1"></i> Layanan Driver
+                                                    </div>
+                                                    @if ($rental->driver)
+                                                        <div
+                                                            class="small text-white fw-bold mt-1 d-flex justify-content-between align-items-center">
+                                                            <span>{{ $rental->driver->name }}</span>
+                                                            @if ($rental->status == 'ongoing')
+                                                                <button type="button" class="btn p-0 text-info small"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#assignDriverModal{{ $rental->id }}"
+                                                                    title="Ganti Driver" style="font-size: 0.75rem;">
+                                                                    Ganti
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                        <div class="small text-secondary" style="font-size: 0.75rem;">WA:
+                                                            {{ $rental->driver->phone ?? '-' }}</div>
+                                                    @else
+                                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                                            <span class="text-warning small italic"
+                                                                style="font-size: 0.75rem;">Belum ada driver</span>
+                                                            @if ($rental->status == 'ongoing' || $rental->status == 'pending')
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-outline-warning py-0 px-2 fw-bold"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#assignDriverModal{{ $rental->id }}"
+                                                                    style="font-size: 0.7rem;">
+                                                                    Assign Driver
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         @else
                                             <div class="text-danger small">Unit Terhapus</div>
                                         @endif
                                     </td>
+
+                                    <!-- KOLOM PEMBAYARAN -->
                                     <td class="py-3 text-center">
                                         <div class="small text-success fw-bold" style="font-size: 0.8rem;">
                                             Masuk: Rp {{ number_format($rental->total_paid ?? 0, 0, ',', '.') }}
@@ -125,6 +161,8 @@
                                             Total: Rp {{ number_format($rental->total_price, 0, ',', '.') }}
                                         </div>
                                     </td>
+
+                                    <!-- KOLOM STATUS -->
                                     <td class="text-end py-3">
                                         @php
                                             $statusColor = match ($rental->status) {
@@ -134,12 +172,13 @@
                                                 default => 'primary',
                                             };
                                         @endphp
-
                                         <span
                                             class="badge rounded-pill bg-{{ $statusColor }} bg-opacity-10 text-{{ $statusColor }} border border-{{ $statusColor }} border-opacity-25 px-3 text-white">
                                             {{ ucfirst($rental->status) }}
                                         </span>
                                     </td>
+
+                                    <!-- KOLOM AKSI UTAMA -->
                                     <td class="text-end py-3">
                                         <div class="d-flex justify-content-end gap-1">
                                             @if ($rental->status == 'ongoing')
@@ -149,7 +188,6 @@
                                                             $rental->return_date_scheduled,
                                                         )->startOfDay(),
                                                     );
-                                                    $isFullyPaid = $rental->remaining_payment <= 0;
                                                 @endphp
 
                                                 @if ($isTimeToCheckIn)
@@ -162,8 +200,7 @@
                                                 @else
                                                     <button type="button"
                                                         class="btn btn-sm btn-secondary d-flex align-items-center gap-1"
-                                                        disabled
-                                                        title="{{ !$isFullyPaid ? 'Pembayaran belum lunas!' : 'Belum memasuki tanggal pengembalian!' }}">
+                                                        disabled title="Belum memasuki tanggal pengembalian!">
                                                         <i class="bi bi-lock-fill"></i> Lock Return
                                                     </button>
                                                 @endif
@@ -196,6 +233,17 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3 px-3">
+        <div class="small text-secondary">
+            Menampilkan {{ $recentRentals->firstItem() ?? 0 }} sampai {{ $recentRentals->lastItem() ?? 0 }} dari
+            {{ $recentRentals->total() }} data
+        </div>
+        <div>
+            {{-- Menggunakan pagination Bootstrap yang rapi --}}
+            {{ $recentRentals->links('pagination::bootstrap-5') }}
         </div>
     </div>
 
@@ -293,6 +341,83 @@
                                     data-bs-dismiss="modal">Batal</button>
                                 <button type="submit" class="btn btn-success fw-bold">Konfirmasi Selesai &
                                     Kembalikan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
+    @foreach ($recentRentals as $rental)
+        @if ($rental->with_driver == 1 && ($rental->status == 'ongoing' || $rental->status == 'pending'))
+            <div class="modal fade" id="assignDriverModal{{ $rental->id }}" tabindex="-1"
+                aria-labelledby="assignDriverModalLabel{{ $rental->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content bg-dark text-white border-secondary">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title" id="assignDriverModalLabel{{ $rental->id }}">
+                                <i class="bi bi-person-badge text-primary me-2"></i>Tunjuk Driver Tugas
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('admin.rentals.assign-driver', $rental->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body text-start">
+                                <div
+                                    class="mb-3 p-3 bg-opacity-10 bg-info border border-info border-opacity-25 rounded small text-white">
+                                    <span class="fw-bold">Detail Penugasan:</span><br>
+                                    Penyewa: {{ $rental->user->userDetail->full_name ?? '-' }}<br>
+                                    Armada: {{ $rental->vehicle->model ?? '-' }} (Plat:
+                                    {{ $rental->vehicle->plate_number ?? '-' }})
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small text-secondary mb-2">PILIH DRIVER YANG TERSEDIA</label>
+                                    <select name="driver_id" class="form-select bg-dark text-white border-secondary"
+                                        required>
+                                        <option value="">-- Pilih Driver --</option>
+                                        @foreach ($drivers as $driver)
+                                            @php
+                                                $isOverlap = $driver->rentals->contains(function ($otherRental) use (
+                                                    $rental,
+                                                ) {
+                                                    if ($otherRental->id === $rental->id) {
+                                                        return false;
+                                                    }
+                                                    return $rental->rental_date <=
+                                                        $otherRental->return_date_scheduled &&
+                                                        $rental->return_date_scheduled >= $otherRental->rental_date;
+                                                });
+                                            @endphp
+                                            @if (!$isOverlap || $rental->driver_id == $driver->id)
+                                                <option value="{{ $driver->id }}"
+                                                    {{ $rental->driver_id == $driver->id ? 'selected' : '' }}>
+                                                    {{ $driver->name }}
+                                                    @if ($rental->driver_id == $driver->id)
+                                                        (Driver Saat Ini)
+                                                    @else
+                                                        {{ $driver->status == 'available' ? '(Tersedia)' : '(Sedang Bertugas)' }}
+                                                    @endif
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="small text-secondary mb-2">CATATAN TAMBAHAN UNTUK DRIVER</label>
+                                    <textarea name="driver_notes" class="form-control bg-dark text-white border-secondary" rows="2"
+                                        placeholder="Contoh: Jemput di bandara jam 9 pagi, bawa papan nama.">{{ $rental->driver_notes ?? '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-secondary">
+                                <button type="button" class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary text-dark fw-bold">Simpan Tugas
+                                    Driver</button>
                             </div>
                         </form>
                     </div>

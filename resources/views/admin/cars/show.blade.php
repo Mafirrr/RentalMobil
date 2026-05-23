@@ -1,9 +1,9 @@
 <div class="card bg-secondary bg-opacity-10 border-0 shadow-lg" style="overflow: hidden; border-radius: 24px;">
     <div class="row g-0">
         <div class="col-lg-7 position-relative" style="min-height: 450px;">
-            @if ($vehicle->image)
-                <img src="{{ asset('storage/' . $vehicle->image) }}" class="img-fluid w-100 h-100"
-                    style="object-fit: cover;" alt="{{ $vehicle->model }}">
+            @if ($vehicle->image_front)
+                <img src="{{ $vehicle->image_front }}" class="img-fluid w-100 h-100" style="object-fit: cover;"
+                    alt="{{ $vehicle->model }}">
             @else
                 <div class="w-100 h-100 bg-black d-flex align-items-center justify-content-center text-secondary">
                     <i class="bi bi-image display-1"></i>
@@ -21,42 +21,22 @@
             </div>
 
             <div class="row g-3 mb-4">
-                {{-- INFO KHUSUS MOBIL --}}
-                @if ($vehicle->vehicle_type == 'car')
-                    <div class="col-6">
-                        <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
-                            <i class="bi bi-people text-primary fs-4"></i>
-                            <span class="text-secondary small d-block">Kapasitas</span>
-                            <strong class="text-white">{{ $vehicle->car->capacity ?? '-' }} Kursi</strong>
-                        </div>
+                <div class="col-6">
+                    <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
+                        <i class="bi bi-people text-primary fs-4"></i>
+                        <span class="text-secondary small d-block">Kapasitas</span>
+                        <strong class="text-white">{{ $vehicle->car->capacity ?? '-' }} Kursi</strong>
                     </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
-                            <i class="bi bi-gear text-primary fs-4"></i>
-                            <span class="text-secondary small d-block">Transmisi</span>
-                            <strong class="text-white">{{ $vehicle->car->transmission ?? '-' }}</strong>
-                        </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
+                        <i class="bi bi-gear text-primary fs-4"></i>
+                        <span class="text-secondary small d-block">Transmisi</span>
+                        <strong class="text-white">{{ $vehicle->car->transmission ?? '-' }}</strong>
                     </div>
-                    {{-- INFO KHUSUS MOTOR --}}
-                @else
-                    <div class="col-6">
-                        <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
-                            <i class="bi bi-speedometer2 text-primary fs-4"></i>
-                            <span class="text-secondary small d-block">Mesin</span>
-                            <strong class="text-white">{{ $vehicle->motorcycle->engine_capacity ?? '-' }} cc</strong>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
-                            <i class="bi bi-shield-check text-primary fs-4"></i>
-                            <span class="text-secondary small d-block">Helm</span>
-                            <strong
-                                class="text-white">{{ $vehicle->motorcycle->includes_helmet ?? false ? 'Tersedia' : 'Tidak' }}</strong>
-                        </div>
-                    </div>
-                @endif
+                </div>
 
-                {{-- INFO UMUM (Sama untuk keduanya) --}}
+
                 <div class="col-6">
                     <div class="p-3 bg-dark rounded-4 text-center border border-secondary border-opacity-10">
                         <i class="bi bi-calendar3 text-primary fs-4"></i>

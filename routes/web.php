@@ -3,11 +3,15 @@
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\admin\RentalController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DetailController;
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PenyewaController;
 use App\Http\Controllers\WishlistController;
+use App\Models\Driver;
 use App\Models\Rental;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -16,10 +20,12 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::call(function () {
     $today = Carbon::today()->toDateString();
-    $rentedVehicleIds = Rental::where('status', 'ongoing')
+    $activeRentals = Rental::where('status', 'ongoing')
         ->whereDate('rental_date', '<=', $today)
-        ->whereDate('return_date_scheduled', '>=', $today)
-        ->pluck('vehicle_id');
+        ->whereDate('return_date_scheduled', '>=', $today);
+
+    $rentedVehicleIds = $activeRentals->clone()->pluck('vehicle_id')->filter()->toArray();
+    $assignedDriverIds = $activeRentals->clone()->where('with_driver', 1)->pluck('driver_id')->filter()->toArray();
 
     Vehicle::whereNotIn('id', $rentedVehicleIds)
         ->where('status', '!=', 'available')
@@ -28,9 +34,27 @@ Schedule::call(function () {
     Vehicle::whereIn('id', $rentedVehicleIds)
         ->where('status', '!=', 'rented')
         ->update(['status' => 'rented']);
+
+    Driver::whereNotIn('id', $assignedDriverIds)
+        ->where('status', 'assigned')
+        ->update(['status' => 'available']);
+
+    Driver::whereIn('id', $assignedDriverIds)
+        ->where('status', '!=', 'assigned')
+        ->update(['status' => 'assigned']);
 })->daily();
 
 Route::get('/',  [LandingController::class, 'index'])->name('landing');
+Route::get('forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request');
+
+Route::post('forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email');
+Route::get('reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+
+Route::post('reset-password', [ResetPasswordController::class, 'reset'])
+    ->name('password.update');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -52,8 +76,16 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::delete('/delete/{id}', [AdminController::class, 'destroy'])->name('admin.vehicles.destroy');
     });
 
+    Route::prefix('drivers')->group(function () {
+        Route::get('/', [DriverController::class, 'index'])->name('admin.drivers');
+        Route::post('/create', [DriverController::class, 'store'])->name('admin.drivers.store');
+        Route::put('/update/{id}', [DriverController::class, 'update'])->name('admin.drivers.update');
+        Route::delete('/delete/{id}', [DriverController::class, 'destroy'])->name('admin.drivers.destroy');
+    });
+
     Route::prefix('rental')->group(function () {
         Route::get('/', [PenyewaController::class, 'index'])->name('admin.rentals');
+        Route::put('/assign/{id}', [PenyewaController::class, 'assign'])->name('admin.rentals.assign-driver');
         Route::put('/return/{id}', [PenyewaController::class, 'update'])->name('admin.rentals.return');
         Route::put('/{rental}/cancel', [PenyewaController::class, 'cancel'])->name('admin.rentals.cancel');
     });

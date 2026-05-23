@@ -236,21 +236,6 @@
             </div>
         </div>
 
-        <div class="d-flex gap-2 mb-5 flex-wrap">
-            <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => ''])) }}"
-                class="btn filter-btn {{ request('type') == '' ? 'active' : '' }}">
-                Semua
-            </a>
-            <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'car'])) }}"
-                class="btn filter-btn {{ request('type') == 'car' ? 'active' : '' }}">
-                <i class="bi bi-car-front me-2"></i>Mobil
-            </a>
-            <a href="{{ route('admin.vehicles', array_merge(request()->query(), ['type' => 'motorcycle'])) }}"
-                class="btn filter-btn {{ request('type') == 'motorcycle' ? 'active' : '' }}">
-                <i class="bi bi-bicycle me-2"></i>Motor
-            </a>
-        </div>
-
         <div class="row g-4">
             <div class="col-xl-3 col-md-6">
                 <a href="{{ route('admin.vehicles.create') }}" class="text-decoration-none h-100">
